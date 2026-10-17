@@ -1,0 +1,15 @@
+{
+  "python": "3.14.8",
+  "platform": "Linux-7.2.9-200.fc44.x86_64-x86_64-with-glibc2.43",
+  "machine": "x86_64",
+  "processor": "unknown",
+  "cpu_count": 8,
+  "total_memory_mb": 7696,
+  "packages": {
+    "python-sat": "1.9.dev15",
+    "ortools": "9.15.6755",
+    "matplotlib": "3.11.2",
+    "psutil": "7.2.2",
+    "pytest": "9.1.1"
+  }
+}

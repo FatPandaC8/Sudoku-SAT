@@ -5,3 +5,5 @@ For each board size \(N \times N\), where \(N\) is a perfect square, benchmark i
 The benchmark does not require puzzle uniqueness. The objective is to determine whether each solver can find **at least one valid solution** within the prescribed time limit. A solver's output is accepted if it satisfies all original clues and all Sudoku constraints, including row, column, and subgrid constraints. The returned solution is not required to match the particular completed grid used during puzzle generation, since a puzzle may admit multiple valid solutions.
 
 A run is considered successful only when a valid solution is returned within the time limit. Timeouts, execution errors, incorrect solutions, and incorrect unsatisfiability claims are recorded as distinct outcomes. This evaluation protocol allows different solver implementations to be compared under a consistent correctness criterion without incurring the additional cost of proving solution uniqueness.
+
+Compare based on removal ratio

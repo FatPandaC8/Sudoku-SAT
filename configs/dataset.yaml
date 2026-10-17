@@ -1,0 +1,23 @@
+# Fixed Dataset Configuration for Sudoku Solver Benchmark
+# University assignment: Empirical Comparison of SAT Solving and Other Exact Methods for Sudoku
+# Note: Ratios are experimental factors, not difficulty labels.
+
+generator_version: "gen-v1"
+base_seed: 42
+
+sizes:
+  - 9
+  - 36
+  - 81
+
+ratios:
+  - 0.3
+  - 0.5
+  - 0.7
+  - 0.9
+
+puzzles_per_pair: 100
+
+output_dir: "data/puzzles"
+manifest_path: "data/manifest.csv"
+info_path: "data/dataset_info.json"

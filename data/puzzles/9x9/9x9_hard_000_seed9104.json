@@ -1,0 +1,20 @@
+{
+  "puzzle_id": "9x9_hard_000_seed9104",
+  "size": 9,
+  "difficulty": "hard",
+  "index": 0,
+  "puzzle": "45......3\n..7.6.2..\n16.....8.\n....9..6.\n.951.6..2\n.....5..1\n.2..3.1..\n.1.258.7.\n3.......5",
+  "solution": "452879613\n987361254\n163542987\n241793568\n795186432\n836425791\n528937146\n614258379\n379614825",
+  "metadata": {
+    "size": 9,
+    "difficulty": "hard",
+    "seed": 9104,
+    "clue_count": 28,
+    "target_clues": 28,
+    "target_reached": true,
+    "removals": 53,
+    "unique": true,
+    "difficulty_score": 246,
+    "generation_time": 0.12117389400009415
+  }
+}

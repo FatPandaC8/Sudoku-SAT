@@ -1,0 +1,34 @@
+{
+  "sizes": [
+    9
+  ],
+  "difficulties": [
+    "easy",
+    "hard"
+  ],
+  "puzzles_per_category": 1,
+  "timeout": 10.0,
+  "repetitions": 1,
+  "puzzle_dir": "data/puzzles",
+  "output_dir": "data/results_smoke",
+  "generation_seed": 42,
+  "generation_timeout": 60.0,
+  "solver_configs": [
+    {
+      "solver": "backtracking"
+    },
+    {
+      "solver": "cpsat"
+    },
+    {
+      "solver": "sat",
+      "encoding": "pairwise",
+      "backend": "minisat22"
+    },
+    {
+      "solver": "sat",
+      "encoding": "sequential",
+      "backend": "glucose4"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+run_key,puzzle_id,size,difficulty,solver_family,solver_config,encoding,backend,status,runtime,validated,peak_rss_mb,cnf_vars,cnf_clauses,sat_conflicts,sat_propagations,bt_nodes,bt_decisions,bt_backtracks,bt_propagations,cpsat_branches,cpsat_conflicts,error
+9x9_easy_000_seed9042|backtracking|r0,9x9_easy_000_seed9042,9,easy,backtracking,backtracking,,reference-bt,solved,0.000881,True,20.91,,,,,37,36,0,1620,,,
+9x9_easy_000_seed9042|cpsat|r0,9x9_easy_000_seed9042,9,easy,cpsat,cpsat,,ortools-cpsat,solved,0.022266,True,100.95,,,,,,,,,0,0,
+9x9_easy_000_seed9042|sat/pairwise/minisat22|r0,9x9_easy_000_seed9042,9,easy,sat,sat/pairwise/minisat22,pairwise,minisat22,solved,0.017541,True,25.5,729,12033,0,730,,,,,,,
+9x9_easy_000_seed9042|sat/sequential/glucose4|r0,9x9_easy_000_seed9042,9,easy,sat,sat/sequential/glucose4,sequential,glucose4,solved,0.014652,True,25.71,2997,9765,0,2998,,,,,,,
+9x9_hard_000_seed9104|backtracking|r0,9x9_hard_000_seed9104,9,hard,backtracking,backtracking,,reference-bt,solved,0.003823,True,20.91,,,,,246,262,17,5685,,,
+9x9_hard_000_seed9104|cpsat|r0,9x9_hard_000_seed9104,9,hard,cpsat,cpsat,,ortools-cpsat,solved,0.017342,True,101.15,,,,,,,,,0,0,
+9x9_hard_000_seed9104|sat/pairwise/minisat22|r0,9x9_hard_000_seed9104,9,hard,sat,sat/pairwise/minisat22,pairwise,minisat22,solved,0.015947,True,25.64,729,12016,2,874,,,,,,,
+9x9_hard_000_seed9104|sat/sequential/glucose4|r0,9x9_hard_000_seed9104,9,hard,sat,sat/sequential/glucose4,sequential,glucose4,solved,0.020721,True,25.84,2997,9748,1,3009,,,,,,,

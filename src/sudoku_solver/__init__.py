@@ -1,0 +1,1 @@
+"""Sudoku solving and benchmarking toolkit."""

@@ -1,0 +1,33 @@
+[benchmark]
+# Board sizes (N = k^2) and difficulty categories to benchmark.
+sizes = [9, 16]
+difficulties = ["easy", "medium", "hard"]
+puzzles_per_category = 3
+# Wall-clock limit per run (seconds).
+timeout = 30.0
+repetitions = 1
+puzzle_dir = "data/puzzles"
+output_dir = "data/results"
+# Dataset generation (only runs for puzzles that do not exist yet).
+generation_seed = 42
+generation_timeout = 120.0
+
+# One entry per solver configuration; each gets its own runs.
+# Families: "backtracking", "cpsat", "sat".
+solver_configs = [
+    { solver = "backtracking" },
+    { solver = "backtracking", use_ac3 = true },
+    { solver = "cpsat" },
+    # Compare AMO encodings under one backend first...
+    { solver = "sat", encoding = "pairwise", backend = "minisat22" },
+    { solver = "sat", encoding = "binary", backend = "minisat22" },
+    { solver = "sat", encoding = "commander", backend = "minisat22",
+      encoding_opts = { commander_group_size = 4 } },
+    { solver = "sat", encoding = "commander", backend = "minisat22",
+      encoding_opts = { commander_group_size = 8 } },
+    { solver = "sat", encoding = "product", backend = "minisat22" },
+    { solver = "sat", encoding = "sequential", backend = "minisat22" },
+    # ...then backends with a fixed encoding.
+    { solver = "sat", encoding = "pairwise", backend = "glucose4" },
+    { solver = "sat", encoding = "pairwise", backend = "cadical153" },
+]
