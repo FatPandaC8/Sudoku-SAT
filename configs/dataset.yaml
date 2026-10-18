@@ -11,13 +11,19 @@ sizes:
   - 81
 
 ratios:
-  - 0.3
   - 0.5
-  - 0.7
   - 0.9
 
-puzzles_per_pair: 100
+puzzles_per_pair: 20
 
 output_dir: "data/puzzles"
 manifest_path: "data/manifest.csv"
 info_path: "data/dataset_info.json"
+
+# Preliminary full_v1 benchmark run: number of puzzles sampled per matrix cell.
+# Same k for every (N, ratio) pair (balanced, deterministic). Selected from archived
+# pilot_v2 medians so expected runtime fits the ~3-5 minute target under the
+# 5-minute hard wall-clock budget. Derivation: sum of pilot medians over all
+# full/license cells ≈ 236.5 s/k; k=1 -> ~236.5 s (~3.94 min), k=2 -> ~472.9 s
+# (over budget). Do not change after seeing results.
+sample_per_pair: 1

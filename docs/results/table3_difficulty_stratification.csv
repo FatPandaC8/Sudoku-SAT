@@ -1,0 +1,13 @@
+Grid Size N,Removal Ratio,Solver Group,Attempted Runs,Valid Solutions,Valid Solve Rate (%),Timeouts,Resource Guard Live,Invalid Solutions,Predeclared Exclusions,Median Valid Solve Time (s)
+9,0.5,SAT,7,6,85.71,0,0,1,0,0.00605
+9,0.5,Non-SAT (CP-SAT),1,1,100.0,0,0,0,0,0.01803
+9,0.9,SAT,7,7,100.0,0,0,0,0,0.006925
+9,0.9,Non-SAT (CP-SAT),1,1,100.0,0,0,0,0,0.025506
+36,0.5,SAT,7,3,42.86,4,0,0,0,7.319755
+36,0.5,Non-SAT (CP-SAT),1,1,100.0,0,0,0,0,2.726046
+36,0.9,SAT,7,7,100.0,0,0,0,0,1.264652
+36,0.9,Non-SAT (CP-SAT),1,1,100.0,0,0,0,0,2.620786
+81,0.5,SAT,5,0,0.0,4,1,0,2,-
+81,0.5,Non-SAT (CP-SAT),1,0,0.0,1,0,0,0,-
+81,0.9,SAT,5,0,0.0,5,0,0,2,-
+81,0.9,Non-SAT (CP-SAT),1,0,0.0,1,0,0,0,-

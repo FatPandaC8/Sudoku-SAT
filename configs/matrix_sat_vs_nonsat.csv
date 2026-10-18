@@ -1,0 +1,49 @@
+config,N,ratio,decision,reason,indices,expected_runs
+sat_pairwise_cadical153,9,0.5,INCLUDE,,0-19,20
+sat_sequential_cadical153,9,0.5,INCLUDE,,0-19,20
+sat_binary_cadical153,9,0.5,INCLUDE,,0-19,20
+sat_commander_cadical153,9,0.5,INCLUDE,,0-19,20
+sat_product_cadical153,9,0.5,INCLUDE,,0-19,20
+sat_sequential_glucose4,9,0.5,INCLUDE,,0-19,20
+sat_sequential_minisat22_extra_backend,9,0.5,INCLUDE,,0-19,20
+cpsat,9,0.5,INCLUDE,,0-19,20
+sat_pairwise_cadical153,9,0.9,INCLUDE,,0-19,20
+sat_sequential_cadical153,9,0.9,INCLUDE,,0-19,20
+sat_binary_cadical153,9,0.9,INCLUDE,,0-19,20
+sat_commander_cadical153,9,0.9,INCLUDE,,0-19,20
+sat_product_cadical153,9,0.9,INCLUDE,,0-19,20
+sat_sequential_glucose4,9,0.9,INCLUDE,,0-19,20
+sat_sequential_minisat22_extra_backend,9,0.9,INCLUDE,,0-19,20
+cpsat,9,0.9,INCLUDE,,0-19,20
+sat_pairwise_cadical153,36,0.5,INCLUDE,,0-19,20
+sat_sequential_cadical153,36,0.5,INCLUDE,,0-19,20
+sat_binary_cadical153,36,0.5,INCLUDE,,0-19,20
+sat_commander_cadical153,36,0.5,INCLUDE,,0-19,20
+sat_product_cadical153,36,0.5,INCLUDE,,0-19,20
+sat_sequential_glucose4,36,0.5,INCLUDE,,0-19,20
+sat_sequential_minisat22_extra_backend,36,0.5,INCLUDE,,0-19,20
+cpsat,36,0.5,INCLUDE,,0-19,20
+sat_pairwise_cadical153,36,0.9,INCLUDE,,0-19,20
+sat_sequential_cadical153,36,0.9,INCLUDE,,0-19,20
+sat_binary_cadical153,36,0.9,INCLUDE,,0-19,20
+sat_commander_cadical153,36,0.9,INCLUDE,,0-19,20
+sat_product_cadical153,36,0.9,INCLUDE,,0-19,20
+sat_sequential_glucose4,36,0.9,INCLUDE,,0-19,20
+sat_sequential_minisat22_extra_backend,36,0.9,INCLUDE,,0-19,20
+cpsat,36,0.9,INCLUDE,,0-19,20
+sat_pairwise_cadical153,81,0.5,EXCLUDE_RESOURCE_GUARD_PREDECLARED,"Predeclared resource-guard exclusion: pilot calibration estimated ~13.2 GB (pairwise) / ~2.2 GB (binary) CNF build memory at N=81, exceeding the 0.60 x available-RAM guard; recorded as BUILD_FAIL / RESOURCE_GUARD, not executed.",0-19,20
+sat_sequential_cadical153,81,0.5,INCLUDE,,0-19,20
+sat_binary_cadical153,81,0.5,EXCLUDE_RESOURCE_GUARD_PREDECLARED,"Predeclared resource-guard exclusion: pilot calibration estimated ~13.2 GB (pairwise) / ~2.2 GB (binary) CNF build memory at N=81, exceeding the 0.60 x available-RAM guard; recorded as BUILD_FAIL / RESOURCE_GUARD, not executed.",0-19,20
+sat_commander_cadical153,81,0.5,INCLUDE,,0-19,20
+sat_product_cadical153,81,0.5,INCLUDE,,0-19,20
+sat_sequential_glucose4,81,0.5,INCLUDE,,0-19,20
+sat_sequential_minisat22_extra_backend,81,0.5,INCLUDE,,0-19,20
+cpsat,81,0.5,INCLUDE,,0-19,20
+sat_pairwise_cadical153,81,0.9,EXCLUDE_RESOURCE_GUARD_PREDECLARED,"Predeclared resource-guard exclusion: pilot calibration estimated ~13.2 GB (pairwise) / ~2.2 GB (binary) CNF build memory at N=81, exceeding the 0.60 x available-RAM guard; recorded as BUILD_FAIL / RESOURCE_GUARD, not executed.",0-19,20
+sat_sequential_cadical153,81,0.9,INCLUDE,,0-19,20
+sat_binary_cadical153,81,0.9,EXCLUDE_RESOURCE_GUARD_PREDECLARED,"Predeclared resource-guard exclusion: pilot calibration estimated ~13.2 GB (pairwise) / ~2.2 GB (binary) CNF build memory at N=81, exceeding the 0.60 x available-RAM guard; recorded as BUILD_FAIL / RESOURCE_GUARD, not executed.",0-19,20
+sat_commander_cadical153,81,0.9,INCLUDE,,0-19,20
+sat_product_cadical153,81,0.9,INCLUDE,,0-19,20
+sat_sequential_glucose4,81,0.9,INCLUDE,,0-19,20
+sat_sequential_minisat22_extra_backend,81,0.9,INCLUDE,,0-19,20
+cpsat,81,0.9,INCLUDE,,0-19,20

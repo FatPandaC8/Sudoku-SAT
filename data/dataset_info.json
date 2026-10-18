@@ -1,17 +1,15 @@
 {
   "base_seed": 42,
   "counts": {
-    "puzzles_per_pair": 100,
-    "total_pairs": 12,
-    "total_puzzles": 1200
+    "puzzles_per_pair": 20,
+    "total_pairs": 6,
+    "total_puzzles": 120
   },
   "generator_version": "gen-v1",
-  "manifest_sha256": "6d5890c2b72f97b58899276c372d1b997e948e21166f5e3812e490d0facd0079",
+  "manifest_sha256": "32480814e1f5e1acc13563a39aca0d8a9a4cccc2ee183490cdafc5baa9e7bff6",
   "python_version": "3.14.8",
   "ratios": [
-    0.3,
     0.5,
-    0.7,
     0.9
   ],
   "sizes": [

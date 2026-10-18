@@ -1,0 +1,3 @@
+Solver Family,Configurations,Predeclared Exclusions,Attempted Runs,Valid Solutions,Attempted Solve Rate (%),License-Eligible Runs,License-Eligible Solve Rate (%),Timeouts,Timeout Rate (% of attempted),Invalid Solutions,Build Failures (Predeclared),License-Blocked Runs,Resource Guard Live Rejections,Median Solve Time (s),Q25 (s),Q75 (s),IQR (s)
+SAT Solvers,7,4,38,23,60.53,38,60.53,13,34.21,1,4,0,1,0.008289,0.006414,1.59309,1.586675
+Non-SAT Solvers,4,0,24,10,41.67,12,83.33,2,8.33,0,0,12,0,0.061074,0.029993,0.108364,0.078372

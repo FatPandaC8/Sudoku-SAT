@@ -24,6 +24,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 # Ensure 'src' is in sys.path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "src"))
@@ -47,7 +49,30 @@ def parse_args() -> argparse.Namespace:
         default=REPO_ROOT / "data" / "manifest.csv",
         help="Path to manifest.csv to validate.",
     )
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=REPO_ROOT / "configs" / "dataset.yaml",
+        help="Path to dataset YAML configuration (derives expected counts).",
+    )
     return parser.parse_args()
+
+
+def load_expected_counts(config_path: Path) -> dict[str, Any]:
+    with open(config_path, "r", encoding="utf-8") as f:
+        cfg = yaml.safe_load(f)
+    sizes = [int(s) for s in cfg.get("sizes", [9, 36, 81])]
+    ratios = [float(r) for r in cfg.get("ratios", [0.3, 0.5, 0.7, 0.9])]
+    puzzles_per_pair = int(cfg.get("puzzles_per_pair", 100))
+    total_pairs = len(sizes) * len(ratios)
+    return {
+        "sizes": sizes,
+        "ratios": ratios,
+        "puzzles_per_pair": puzzles_per_pair,
+        "total_pairs": total_pairs,
+        "expected_rows": total_pairs * puzzles_per_pair,
+        "expected_files": total_pairs,
+    }
 
 
 def main() -> None:
@@ -58,10 +83,15 @@ def main() -> None:
         print(f"ERROR: Manifest file not found at {manifest_path}", file=sys.stderr)
         sys.exit(1)
 
+    expected = load_expected_counts(args.config)
+    expected_rows = expected["expected_rows"]
+    expected_files = expected["expected_files"]
+
     print("=" * 70)
     print("SUDOKU BENCHMARK — DATASET VALIDATION")
     print("=" * 70)
     print(f"Validating manifest: {manifest_path}")
+    print(f"Expected rows:       {expected_rows} ({expected_files} pairs x {expected['puzzles_per_pair']} puzzles)")
 
     try:
         rows = read_manifest(manifest_path)
@@ -70,11 +100,11 @@ def main() -> None:
         sys.exit(1)
 
     total_rows = len(rows)
-    print(f"Manifest rows read: {total_rows}")
+    print(f"Manifest rows read:  {total_rows}")
 
-    if total_rows != 1200:
+    if total_rows != expected_rows:
         print(
-            f"ERROR: Manifest must contain exactly 1,200 rows, found {total_rows}",
+            f"ERROR: Manifest must contain exactly {expected_rows} rows, found {total_rows}",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -95,15 +125,16 @@ def main() -> None:
         rows_by_file.setdefault(r["file"], []).append(r)
 
     print(f"Referenced files:   {len(rows_by_file)} files")
-    if len(rows_by_file) != 12:
+    if len(rows_by_file) != expected_files:
         print(
-            f"ERROR: Expected 12 distinct JSONL files, found {len(rows_by_file)}",
+            f"ERROR: Expected {expected_files} distinct JSONL files, found {len(rows_by_file)}",
             file=sys.stderr,
         )
         sys.exit(1)
 
     errors: list[str] = []
     validated_count = 0
+    puzzles_per_pair = expected["puzzles_per_pair"]
 
     for file_str, file_rows in sorted(rows_by_file.items()):
         try:
@@ -112,14 +143,16 @@ def main() -> None:
             errors.append(str(e))
             continue
 
-        if len(file_rows) != 100:
-            errors.append(f"File {file_str} has {len(file_rows)} manifest entries (expected 100)")
+        if len(file_rows) != puzzles_per_pair:
+            errors.append(
+                f"File {file_str} has {len(file_rows)} manifest entries (expected {puzzles_per_pair})"
+            )
 
         with open(resolved_file, "r", encoding="utf-8") as f:
             lines = f.readlines()
 
-        if len(lines) != 100:
-            errors.append(f"File {resolved_file} has {len(lines)} lines (expected 100)")
+        if len(lines) != puzzles_per_pair:
+            errors.append(f"File {resolved_file} has {len(lines)} lines (expected {puzzles_per_pair})")
             continue
 
         for i, (m_row, line) in enumerate(zip(file_rows, lines), start=1):
@@ -209,7 +242,7 @@ def main() -> None:
             print(f"  ... and {len(errors) - 20} more errors", file=sys.stderr)
         sys.exit(1)
 
-    print(f"SUCCESS: All {validated_count} puzzles across 12 files verified 100% valid.")
+    print(f"SUCCESS: All {validated_count} puzzles across {expected_files} files verified 100% valid.")
     print("All content hashes, seeds, ratios, and manifest cross-references matched perfectly.")
     sys.exit(0)
 

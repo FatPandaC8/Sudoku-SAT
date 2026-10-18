@@ -1,4 +1,8 @@
-"""Tests for Phase 1 dataset generation, storage, loader, and tamper detection."""
+"""Tests for Phase 1 dataset generation, storage, loader, and tamper detection.
+
+Dataset scope: 6 (size, ratio) pairs x 20 puzzles = 120 puzzles total,
+6 JSONL files, 120 manifest rows.
+"""
 
 from __future__ import annotations
 
@@ -23,13 +27,19 @@ def sha256_of_file(path: Path) -> str:
         return hashlib.sha256(f.read()).hexdigest()
 
 
+TOTAL_PUZZLES = 120
+TOTAL_FILES = 6
+PUZZLES_PER_PAIR = 20
+PUZZLES_PER_SIZE = 40
+PUZZLES_PER_RATIO = 60
+
+
 class TestDatasetGenerationAndReproducibility:
     def test_reproducible_across_runs_in_temp_dirs(self, tmp_path: Path):
         dir1 = tmp_path / "run1"
         dir2 = tmp_path / "run2"
 
-        # Run generate_dataset into dir1 (using a smaller config or full? Full dataset generation takes ~2 seconds!)
-        # Let's test with full config!
+        # Run generate_dataset into dir1 (300 puzzles total, fast)
         cmd1 = [
             sys.executable,
             "scripts/generate_dataset.py",
@@ -71,22 +81,21 @@ class TestDatasetGenerationAndReproducibility:
         ]
         assert subprocess.run(val_cmd2, capture_output=True, text=True).returncode == 0
 
-        # Verify all 12 puzzle JSONL files have byte-identical SHA-256
+        # Verify all 6 puzzle JSONL files have byte-identical SHA-256
         files1 = sorted((dir1 / "puzzles").glob("*.jsonl"))
         files2 = sorted((dir2 / "puzzles").glob("*.jsonl"))
-        assert len(files1) == 12
-        assert len(files2) == 12
+        assert len(files1) == TOTAL_FILES
+        assert len(files2) == TOTAL_FILES
 
         for f1, f2 in zip(files1, files2):
             assert f1.name == f2.name
             assert sha256_of_file(f1) == sha256_of_file(f2)
 
         # Verify manifest content is identical
-        # (Note: file column contains dir path if outside repo, so compare data content)
         m_rows1 = read_manifest(dir1 / "manifest.csv")
         m_rows2 = read_manifest(dir2 / "manifest.csv")
-        assert len(m_rows1) == 1200
-        assert len(m_rows2) == 1200
+        assert len(m_rows1) == TOTAL_PUZZLES
+        assert len(m_rows2) == TOTAL_PUZZLES
         for r1, r2 in zip(m_rows1, m_rows2):
             for col in [
                 "id", "N", "box", "requested_ratio", "realized_ratio",
@@ -115,7 +124,7 @@ class TestDatasetLoader:
 
     def test_load_all_puzzles(self, sample_dataset: Path):
         all_puzzles = load_puzzles(sample_dataset)
-        assert len(all_puzzles) == 1200
+        assert len(all_puzzles) == TOTAL_PUZZLES
         first = all_puzzles[0]
         assert "id" in first
         assert "puzzle" in first
@@ -123,31 +132,36 @@ class TestDatasetLoader:
 
     def test_filter_by_size(self, sample_dataset: Path):
         puzzles_9 = load_puzzles(sample_dataset, sizes=9)
-        assert len(puzzles_9) == 400
+        assert len(puzzles_9) == PUZZLES_PER_SIZE
         assert all(p["N"] == 9 for p in puzzles_9)
 
         puzzles_multi = load_puzzles(sample_dataset, sizes=[9, 36])
-        assert len(puzzles_multi) == 800
+        assert len(puzzles_multi) == 2 * PUZZLES_PER_SIZE
+        assert all(p["N"] in {9, 36} for p in puzzles_multi)
 
     def test_filter_by_ratio(self, sample_dataset: Path):
-        puzzles_07 = load_puzzles(sample_dataset, ratios=0.7)
-        assert len(puzzles_07) == 300
-        assert all(abs(p["requested_ratio"] - 0.7) < 1e-5 for p in puzzles_07)
+        puzzles_05 = load_puzzles(sample_dataset, ratios=0.5)
+        assert len(puzzles_05) == PUZZLES_PER_RATIO
+        assert all(abs(p["requested_ratio"] - 0.5) < 1e-5 for p in puzzles_05)
+
+        puzzles_09 = load_puzzles(sample_dataset, ratios=0.9)
+        assert len(puzzles_09) == PUZZLES_PER_RATIO
+        assert all(abs(p["requested_ratio"] - 0.9) < 1e-5 for p in puzzles_09)
 
     def test_filter_by_index_range(self, sample_dataset: Path):
-        # Stage 1 selective set (index 0..19)
+        # Selection set (index 0..19)
         selective = load_puzzles(sample_dataset, index_range=(0, 20))
-        assert len(selective) == 12 * 20  # 240 puzzles
+        assert len(selective) == TOTAL_FILES * PUZZLES_PER_PAIR  # 120 puzzles
         for p in selective:
             idx = int(p["id"].rsplit("_i", 1)[1])
             assert 0 <= idx < 20
 
-        # Evaluation set (index 20..100)
-        eval_set = load_puzzles(sample_dataset, index_range=(20, 100))
-        assert len(eval_set) == 12 * 80  # 960 puzzles
+        # Evaluation set (index 10..19)
+        eval_set = load_puzzles(sample_dataset, index_range=(10, 20))
+        assert len(eval_set) == TOTAL_FILES * 10  # 60 puzzles
         for p in eval_set:
             idx = int(p["id"].rsplit("_i", 1)[1])
-            assert 20 <= idx < 100
+            assert 10 <= idx < 20
 
     def test_combined_filters(self, sample_dataset: Path):
         subset = load_puzzles(
@@ -162,8 +176,8 @@ class TestDatasetLoader:
         ]
 
     def test_load_puzzle_by_id(self, sample_dataset: Path):
-        p = load_puzzle_by_id("sudoku_N036_r0.3_i007", sample_dataset)
-        assert p["id"] == "sudoku_N036_r0.3_i007"
+        p = load_puzzle_by_id("sudoku_N036_r0.5_i007", sample_dataset)
+        assert p["id"] == "sudoku_N036_r0.5_i007"
         assert p["N"] == 36
         assert len(p["puzzle"]) == 36 * 36
 
@@ -187,8 +201,8 @@ class TestTamperDetection:
         val_cmd = [sys.executable, "scripts/validate_dataset.py", "--manifest", str(manifest_file)]
         assert subprocess.run(val_cmd, capture_output=True, text=True).returncode == 0
 
-        # Tamper with the first line of N009_r0.3.jsonl
-        puzzle_file = dataset_dir / "puzzles" / "N009_r0.3.jsonl"
+        # Tamper with the first line of N009_r0.5.jsonl
+        puzzle_file = dataset_dir / "puzzles" / "N009_r0.5.jsonl"
         with open(puzzle_file, "r", encoding="utf-8") as f:
             lines = f.readlines()
 

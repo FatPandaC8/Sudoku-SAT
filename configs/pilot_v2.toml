@@ -1,0 +1,5 @@
+timeout_s = 10.0
+worker_count = 1
+threads_per_solver = 1
+commander_group_size = 4
+backend_comparison_encoding = "sequential"

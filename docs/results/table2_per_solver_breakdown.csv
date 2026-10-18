@@ -1,0 +1,9 @@
+Solver Configuration,Family,Recorded Matrix Cells,Predeclared Exclusions,Attempted Runs,Valid Solutions,Valid Solve Rate (%),Timeouts,Resource Guard Live,Invalid Solutions,Median Valid Solve Time (s)
+sat_pairwise_cadical153,SAT,6,2,4,3,75.0,1,0,0,0.007115
+sat_sequential_cadical153,SAT,6,0,6,4,66.67,2,0,0,0.394002
+sat_binary_cadical153,SAT,6,2,4,3,75.0,1,0,0,0.008097
+sat_commander_cadical153,SAT,6,0,6,4,66.67,1,1,0,0.409618
+sat_product_cadical153,SAT,6,0,6,4,66.67,2,0,0,0.635346
+sat_sequential_glucose4,SAT,6,0,6,3,50.0,3,0,0,0.006083
+sat_sequential_minisat22_extra_backend,SAT,6,0,6,2,33.33,3,0,1,0.42484
+cpsat,Non-SAT,6,0,6,4,66.67,2,0,0,1.323146

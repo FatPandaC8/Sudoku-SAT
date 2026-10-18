@@ -240,7 +240,8 @@ def main() -> None:
 
     print("\nGeneration Time by Size N:")
     for N in sizes:
-        print(f"  N = {N:2d} (400 puzzles): {time_per_size[N]:6.2f}s ({time_per_size[N] / 400 * 1000:5.2f} ms/puzzle)")
+        size_count = len(ratios) * puzzles_per_pair
+        print(f"  N = {N:2d} ({size_count} puzzles): {time_per_size[N]:6.2f}s ({time_per_size[N] / size_count * 1000:5.2f} ms/puzzle)")
 
     print(f"\nManifest written to: {manifest_path} ({manifest_path.stat().st_size / 1024:.1f} KB)")
     print(f"Dataset info to:     {info_path}")
