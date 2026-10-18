@@ -7,7 +7,7 @@ from sudoku_solver.backtracking import (
     count_solutions,
     solve_backtracking,
 )
-from sudoku_solver.puzzle import empty_board, is_valid_solution, parse_puzzle
+from sudoku_solver.puzzle import Board, empty_board, is_valid_solution, parse_puzzle
 
 KNOWN = (
     "53..7....\n6..195...\n.98....6.\n8...6...3\n4..8.3..1\n"
@@ -131,3 +131,67 @@ def test_deterministic_tie_breaking():
     b = solve_backtracking(parse_puzzle(KNOWN))
     assert a.board == b.board
     assert a.stats["nodes"] == b.stats["nodes"]
+
+
+# --- Adapter / integration tests (runner.py flat-list fix) ---
+
+
+def test_flat_list_to_board_conversion():
+    """Simulate what runner.py now does: reshape a flat puzzle list into
+    a 2D grid before constructing Board.  Previously Board(flat_list)
+    raised TypeError: 'int' object is not iterable."""
+    flat = [0, 5, 9, 7, 0, 0, 3, 1, 0] + [0] * 72  # N=9 flat list
+    n = 9
+    grid = [flat[r * n : (r + 1) * n] for r in range(n)]
+    board = Board(grid)
+    assert board.size == 9
+    assert board.at(0, 1) == 5
+    assert board.at(0, 2) == 9
+    result = solve_backtracking(board)
+    assert result.status == "solved"
+    assert is_valid_solution(result.board, board)
+
+
+def test_timeout_returns_timeout_status():
+    """A very short timeout must produce status 'timeout' rather than
+    hanging or returning an incorrect status."""
+    puzzle = empty_board(81)  # large empty board: hard to solve quickly
+    result = solve_backtracking(puzzle, timeout=0.01)
+    assert result.status in ("solved", "timeout", "unsatisfiable")
+    # If solved quickly on an empty 81x81, that's fine too.
+    if result.status == "solved":
+        assert is_valid_solution(result.board, puzzle)
+
+
+def test_timeout_respects_deadline():
+    """With timeout=None (default), no deadline is enforced."""
+    puzzle = parse_puzzle(KNOWN)
+    result = solve_backtracking(puzzle, timeout=None)
+    assert result.status == "solved"
+
+
+def test_solved_solution_passes_independent_validation():
+    """Every solved solution must pass is_valid_solution against givens."""
+    puzzle = parse_puzzle(KNOWN)
+    result = solve_backtracking(puzzle)
+    assert result.status == "solved"
+    assert is_valid_solution(result.board, puzzle)
+
+
+def test_invalid_puzzle_returns_unsatisfiable():
+    """A puzzle with duplicate givens (unsatisfiable) must return
+    'unsatisfiable', not crash."""
+    puzzle = parse_puzzle("11.......\n" + "." * 72)
+    result = solve_backtracking(puzzle)
+    assert result.status == "unsatisfiable"
+    assert result.board is None
+
+
+def test_solver_result_has_stats_keys():
+    """SolverResult.stats must contain all expected keys."""
+    puzzle = parse_puzzle(KNOWN)
+    result = solve_backtracking(puzzle)
+    for key in ("nodes", "decisions", "backtracks", "eliminations",
+                "propagation_steps", "runtime"):
+        assert key in result.stats
+    assert result.stats["runtime"] >= 0

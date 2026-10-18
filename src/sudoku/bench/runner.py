@@ -38,6 +38,7 @@ from ..solvers.cplex_mip import solve_cplex_mip
 from ..solvers.cpsat import solve_cpsat
 from ..solvers.gurobi import solve_gurobi
 from ..solvers.sat import estimate_encoding_clauses, solve_sat
+from sudoku_solver.backtracking import solve_backtracking, Board
 
 RSS_SAMPLING_INTERVAL_S = 0.02
 RESOURCE_GUARD_FRACTION = 0.6
@@ -126,6 +127,16 @@ def run_solver_in_process(puzzle_rec: dict[str, Any], cfg: BenchmarkConfig) -> S
             N=N,
             timeout=cfg.timeout_s,
             workers=cfg.threads,
+        )
+    elif solver == "backtracking":
+        # Backtracking solver expects a Board object (list of row lists).
+        # puzzle_rec["puzzle"] is a flat list; reshape to N x N grid.
+        n = puzzle_rec["N"]
+        grid = [puzzle[r * n : (r + 1) * n] for r in range(n)]
+        return solve_backtracking(
+            board=Board(grid),
+            use_ac3=False,
+            randomize=False,
         )
     else:
         return SolverResult(

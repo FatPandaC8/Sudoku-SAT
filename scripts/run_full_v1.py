@@ -117,6 +117,7 @@ CONFIG_SPECS: dict[str, dict[str, Any]] = {
     "gurobi": {"solver": "gurobi"},
     "cplex_mip": {"solver": "cplex_mip"},
     "cplex_cp": {"solver": "cplex_cp"},
+    "backtracking": {"solver": "backtracking"},
 }
 
 PREDECLARED_EXCLUDED: set[tuple[str, int]] = {

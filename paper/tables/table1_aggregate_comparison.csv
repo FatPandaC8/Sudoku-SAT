@@ -1,0 +1,12 @@
+Metric,SAT_7_configs,CP-SAT_1_config,Backtracking_1_config,Denominator_Notes
+Solver configurations,7,1,1,Distinct solver configurations evaluated
+Recorded matrix cells,840,120,120,Total problem-configuration combinations (120 puzzles x configs)
+Predeclared exclusions,80,0,0,Excluded a priori by 60% RAM memory guard; not counted as attempted
+Attempted runs,760,120,120,Invocations actually executed (Recorded - Predeclared)
+Valid solutions,431,64,40,Solutions certified correct by independent validator
+Valid solve rate (%),56.71,53.33,33.33,Valid Solutions / Attempted Runs
+Timeouts,328,56,80,Runs exceeding 10.0s wall-clock timeout
+Timeout rate (%) of attempted,43.16,46.67,66.67,Timeouts / Attempted runs
+Live resource-guard rejections,1,0,0,Estimated CNF memory exceeded 60% available RAM during execution
+Invalid solutions,0,0,0,Solutions failing independent validation
+Median solve time valid (s),0.009367,0.033353,---,Median wall-clock seconds over SOLVED_VALID runs only; backtracking medians not verified from raw records

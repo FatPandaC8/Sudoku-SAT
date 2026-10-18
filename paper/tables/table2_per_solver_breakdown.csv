@@ -1,0 +1,8 @@
+Solver,Family,Recorded,Predeclared_Excluded,Attempted_Runs,Valid_Solutions,Valid_Solve_Rate_Percent,Timeouts,Resource_Guard_Live,Invalid_Solutions,Median_Valid_Solve_Time_s
+sat_pairwise_cadical153,SAT,120,40,80,62,77.50,18,0,0,0.009861
+sat_sequential_cadical153,SAT,120,0,120,62,51.67,58,0,0,0.007760
+sat_binary_cadical153,SAT,120,40,80,60,75.00,20,0,0,0.011180
+sat_commander_cadical153,SAT,120,0,120,63,52.50,56,1,0,0.008905
+sat_product_cadical153,SAT,120,0,120,64,53.33,56,0,0,0.009016
+sat_sequential_glucose4,SAT,120,0,120,60,50.00,60,0,0,0.007728
+sat_sequential_minisat22,SAT,120,0,120,60,50.00,60,0,0,0.006915

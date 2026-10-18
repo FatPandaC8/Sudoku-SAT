@@ -1,0 +1,47 @@
+% ============================================================================
+% Figure 6: Runtime distribution (specification only -- NOT generated).
+% Reason: per-run t_total values are recorded in data/results/*.csv but were not
+% aggregated under this task's no-code-execution constraint. A meaningful box
+% plot / ECDF requires per-run runtime grouped by (family, stratum, config)
+% over SOLVED_VALID runs only, which has not been computed.
+%
+% Specification for a future figure (do not claim generated):
+%   - Panel A: Box plot of t_total (seconds, log scale) per stratum per family
+%     over SOLVED_VALID runs only. Whiskers exclude censored timeouts.
+%   - Panel B: ECDF of t_total for SAT vs CP-SAT vs Backtracking at N=9
+%     (the only stratum where all families have successes).
+%   - Required fields: t_total, status, N, requested_ratio, solver/encoding/backend.
+%   - Disclosure: successful-run-only distributions are affected by timeout
+%     censoring (timeouts have no finite runtime and are omitted), inducing
+%     survivor bias; medians/percentiles are not comparable to overall completion.
+% ============================================================================
+\documentclass[border=5pt]{standalone}
+\usepackage{amsmath,amssymb}
+\begin{document}
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{
+\textbf{Figure 6 (planned): Runtime distribution --- specification only, not generated.}
+
+\textbf{Data required} (all present in the raw CSVs, not yet aggregated):
+\texttt{t\_total}, \texttt{status}, \texttt{N}, \texttt{requested\_ratio},
+\texttt{solver}, \texttt{encoding}, \texttt{backend} from
+\texttt{data/results/benchmark\_sat\_vs\_nonsat.csv} and
+\texttt{data/results/backtracking\_results.csv}.
+
+\textbf{Planned panels:}
+\begin{itemize}
+  \item Panel A --- Box plot of \texttt{t\_total} (seconds, log scale) per stratum
+        per solver family over \texttt{SOLVED\_VALID} runs only. Censored timeouts
+        omitted (survivor bias disclosed).
+  \item Panel B --- ECDF of \texttt{t\_total} at $N=9$ (only stratum where all
+        families record successes), comparing SAT (pooled), CP-SAT, backtracking.
+\end{itemize}
+
+\textbf{Explicit disclosure:} runtimes are measured over successful runs only;
+timeouts contribute to denominators but have no finite runtime. Any distribution
+plot is therefore affected by timeout censoring and must not be interpreted as
+an overall completion-time distribution. No box plot/ECDF is included in this
+manuscript because the per-run aggregation was not performed.
+}}
+\end{center}
+\end{document}

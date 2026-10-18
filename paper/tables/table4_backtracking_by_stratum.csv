@@ -1,0 +1,7 @@
+N,r,Attempted_Runs,Valid_Solutions,Valid_Solve_Rate_Percent,Timeouts,Median_Valid_Solve_Time_s,Notes
+9,0.5,20,20,100.00,0,0.001079,All 20 instances solved; MRV + forward checking; sub-millisecond medians
+9,0.9,20,20,100.00,0,0.000941,All 20 instances solved; MRV + forward checking; sub-millisecond medians
+36,0.5,20,0,0.00,20,---,All 20 instances timed out at 10.0s
+36,0.9,20,0,0.00,20,---,All 20 instances timed out at 10.0s
+81,0.5,20,0,0.00,20,---,All 20 instances timed out at 10.0s
+81,0.9,20,0,0.00,20,---,All 20 instances timed out at 10.0s

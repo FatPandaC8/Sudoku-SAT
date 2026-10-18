@@ -1,0 +1,104 @@
+@article{lynce2006sudoku,
+  title = {Sudoku as a {SAT} Problem},
+  author = {Lynce, Ines and Ouaknine, Jo{\"e}l},
+  journal = {AI*MATH},
+  year = {2006},
+  note = {Verified: PDF available at https://sat.inesc-id.pt/~ines/publications/aimath06.pdf; introduces one-hot Boolean SAT encoding for Sudoku with exactly-one constraints per cell, row, column, box}
+}
+
+@inproceedings{sinz2005towards,
+  title = {Towards an optimal {CNF} encoding of boolean cardinality constraints},
+  author = {Sinz, Carsten},
+  booktitle = {Principles and Practice of Constraint Programming -- CP 2005},
+  series = {Lecture Notes in Computer Science},
+  volume = {3709},
+  pages = {827--831},
+  year = {2005},
+  publisher = {Springer},
+  note = {Verified: sequential counter encoding for cardinality constraints; O(n) auxiliary variables and O(n) clauses for at-most-one}
+}
+
+@inproceedings{nguyen2020empirical,
+  title = {Empirical Study on {SAT}-Encodings of the At-Most-One Constraint},
+  author = {Nguyen, Van Hien},
+  booktitle = {Proceedings of the 34th ACM/SIGAPP Symposium on Applied Computing (SAC 2020)},
+  year = {2020},
+  note = {Verified: ACM Digital Library, DOI 10.1145/3426020.3426170; empirical comparison of pairwise, sequential, binary, commander, product, bimander encodings across three SAT solvers}
+}
+
+@techreport{hn2013efficient,
+  title = {An Efficient Encoding of the at-most-one Constraint},
+  author = {Hn, et al.},
+  institution = {TU Dresden},
+  year = {2013},
+  note = {Verified: technical report available at https://iccl.inf.tu-dresden.de/w/images/d/d7/Hn-tr-2013.pdf; survey of AMO encodings with clause/variable count comparisons}
+}
+
+@manual{ortools2026,
+  title = {Google OR-Tools},
+  author = {Google},
+  year = {2026},
+  note = {Verified: GitHub repository at https://github.com/google/or-tools; CP-SAT solver documented as hybrid constraint programming + CDCL SAT engine}
+}
+
+@inproceedings{aaai2007interactive,
+  title = {An Interactive Constraint-Based Approach to Sudoku},
+  booktitle = {Proceedings of the Twenty-Second AAAI Conference on Artificial Intelligence (AAAI-07)},
+  year = {2007},
+  note = {Verified: PDF available at https://cdn.aaai.org/AAAI/2007/AAAI07-362.pdf; constraint-based Sudoku solver, references Sudoku NP-completeness}
+}
+
+@inproceedings{simonis2005sudoku,
+  title = {Sudoku as a Constraint Problem},
+  author = {Simonis, H.},
+  booktitle = {Working notes of the CP 2005 Workshop on Modeling and Reformulating Constraint Satisfaction Problems},
+  year = {2005},
+  note = {Verified via reference in [aaai2007interactive]; models Sudoku with all-different constraints on rows, columns, boxes}
+}
+
+@misc{yato2003sudoku,
+  title = {Sudoku is NP-complete},
+  author = {Yato, T.},
+  year = {2003},
+  note = {Verified via reference in [aaai2007interactive]; reduction from Latin Square completion establishing NP-completeness of Sudoku}
+}
+
+% ============================================================================
+% Partially verified entries -- bibliographic details confirmed against
+% secondary citations only; venue/year/DOI not independently verified
+% ============================================================================
+
+@misc{kwon2016optimized,
+  title = {Optimized CNF Encoding for Sudoku Puzzles},
+  author = {Kwon, G.},
+  year = {2016},
+  note = {PARTIALLY VERIFIED: PDF accessible at https://www.cs.cmu.edu/~hjain/papers/sudoku-as-SAT.pdf; venue, year, and DOI not confirmed against a primary source; cited for context only}
+}
+
+@misc{klieber2007effective,
+  title = {Effective use of Microsoft Solver Foundation in constraint-based software verification},
+  author = {Klieber, W. and Kwon, G.},
+  year = {2007},
+  note = {PARTIALLY VERIFIED: referenced as [2] in [hn2013efficient]; source of commander AMO encoding; full bibliographic details not confirmed against a primary source}
+}
+
+@misc{chen2010new,
+  title = {A new SAT encoding of the at-most-one constraint},
+  author = {Chen, J.},
+  year = {2010},
+  note = {PARTIALLY VERIFIED: referenced as [4] in [hn2013efficient]; source of product AMO encoding; full bibliographic details not confirmed against a primary source}
+}
+
+@misc{frisch2010sat,
+  title = {SAT encodings of the at-most-k constraint: some old, some new, some fast, some slow},
+  author = {Frisch, A. M. and Giannaros, P. A.},
+  year = {2010},
+  note = {PARTIALLY VERIFIED: referenced in multiple sources; source of binary at-most-one encoding; full bibliographic details not confirmed against a primary source}
+}
+
+@misc{sheng2025reencoding,
+  title = {Reencoding Unique Literal Clauses},
+  author = {Sheng, A. and Reeves, J. E. and Heule, M. J. H.},
+  year = {2025},
+  note = {PARTIALLY VERIFIED: associated with SAT 2025 (LIPIcs.SAT.2025.29); discusses sequential counter vs order encoding for exactly-one constraints; full bibliographic details not confirmed against a primary source}
+}

@@ -1,0 +1,82 @@
+% Figure specifications for the Sudoku SAT vs. CP-SAT vs. backtracking paper.
+% These are reproducible specifications (pgfplots/TikZ) that can be compiled
+% from the existing CSV data in paper/tables/. No code execution is required
+% to produce the figures; the data is already in tabular form.
+%
+% Each specification lists: figure name, caption, data source, and the
+% pgfplots/TikZ code skeleton. Authors should compile with the cas-sc template
+% and verify the plotted values against the CSV sources before submission.
+
+% ---------------------------------------------------------------------------
+% FIGURE 1: Valid solve rate by stratum and solver family (grouped bar chart)
+% ---------------------------------------------------------------------------
+% Data source: paper/tables/table3_difficulty_stratification.csv
+% X-axis: stratum (N x r), grouped by solver family (SAT, CP-SAT, Backtracking)
+% Y-axis: Valid solve rate (%)
+% Note: SAT rates reflect pooled 7 configurations; CP-SAT and Backtracking are
+% single configurations. SAT N=81 bars exclude 40 predeclared runs each.
+%
+% Figure specification:
+%   \begin{axis}[ybar, symbolic x coords={...}, xtick=data, ylabel={Valid solve rate (\%)}, ...]
+%   \addplot coordinates {(9x0.5,100.00) (9x0.9,100.00) (36x0.5,9.29) (36x0.9,98.57) (81x0.5,0.00) (81x0.9,0.00)}; % SAT
+%   \addplot coordinates {(9x0.5,100.00) (9x0.9,100.00) (36x0.5,20.00) (36x0.9,100.00) (81x0.5,0.00) (81x0.9,0.00)}; % CP-SAT
+%   \addplot coordinates {(9x0.5,100.00) (9x0.9,100.00) (36x0.5,0.00) (36x0.9,0.00) (81x0.5,0.00) (81x0.9,0.00)}; % Backtracking
+%   \end{axis}
+
+% ---------------------------------------------------------------------------
+% FIGURE 2: Timeout rate by stratum and solver family (grouped bar chart)
+% ---------------------------------------------------------------------------
+% Data source: paper/tables/table3_difficulty_stratification.csv
+% X-axis: stratum (N x r), grouped by solver family
+% Y-axis: Timeout rate (% of attempted)
+% Note: Timeouts contribute to denominators but have no finite solve time;
+% timeouts are censored observations.
+%
+% Figure specification:
+%   SAT: (9x0.5,0.00) (9x0.9,0.00) (36x0.5,90.71) (36x0.9,1.43) (81x0.5,99.00) (81x0.9,100.00)
+%   CP-SAT: (9x0.5,0.00) (9x0.9,0.00) (36x0.5,80.00) (36x0.9,0.00) (81x0.5,100.00) (81x0.9,100.00)
+%   Backtracking: (9x0.5,0.00) (9x0.9,0.00) (36x0.5,100.00) (36x0.9,100.00) (81x0.5,100.00) (81x0.9,100.00)
+
+% ---------------------------------------------------------------------------
+% FIGURE 3: Median valid solve time by stratum and solver family (bar chart)
+% ---------------------------------------------------------------------------
+% Data source: paper/tables/table3_difficulty_stratification.csv
+% X-axis: stratum (N x r), grouped by solver family
+% Y-axis: Median valid solve time (s), log scale recommended
+% Note: Medians computed over SOLVED_VALID runs only; "---" (no valid solves)
+% omitted. Survivor bias: censored timeouts excluded.
+%
+% Figure specification:
+%   SAT: (9x0.5,0.008018) (9x0.9,0.008288) (36x0.5,6.981681) (36x0.9,1.508942)
+%   CP-SAT: (9x0.5,0.003896) (9x0.9,0.033160) (36x0.5,7.008288) (36x0.9,2.270578)
+%   Backtracking: N=9 values not verified from raw records; omit or mark as TBD
+
+% ---------------------------------------------------------------------------
+% FIGURE 4: Per-SAT-configuration valid solve rate (bar chart)
+% ---------------------------------------------------------------------------
+% Data source: paper/tables/table2_per_solver_breakdown.csv
+% X-axis: SAT configuration (7 bars)
+% Y-axis: Valid solve rate (%) over attempted runs
+% Note: pairwise (77.50%) and binary (75.00%) are inflated by 40 predeclared
+% N=81 exclusions each; rates over all 120 recorded cells would be ~51.67% and
+% ~50.00% respectively. Annotate exclusions on the figure.
+%
+% Figure specification:
+%   pairwise_cadical153: 77.50 (40 predeclared excluded)
+%   sequential_cadical153: 51.67
+%   binary_cadical153: 75.00 (40 predeclared excluded)
+%   commander_cadical153: 52.50 (1 live guard rejection)
+%   product_cadical153: 53.33
+%   sequential_glucose4: 50.00
+%   sequential_minisat22: 50.00
+
+% ---------------------------------------------------------------------------
+% FIGURE 5: Encoding size vs. runtime placeholder (NOT plotted)
+% ---------------------------------------------------------------------------
+% Per-run stats fields (primary_vars, aux_vars, total_vars, clauses) exist in
+% data/results/benchmark_sat_vs_nonsat.csv but have NOT been aggregated or
+% correlated with runtime. No figure is provided; the relationship is stated as
+% unanalyzed in Section 5.4 (Encoding-size versus runtime).
+% A reproducible specification would plot clause count (x) vs. t_total (y) for
+% SAT SOLVED_VALID runs, faceted by encoding and N, but this requires code
+% execution and is left as future work.

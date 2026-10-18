@@ -1,0 +1,76 @@
+% ============================================================================
+% Figure 5: Experimental workflow diagram.
+% TikZ flowchart: dataset -> solver configurations -> timeout/resource guard ->
+% run -> independent validation -> result status -> analysis/tables.
+% Compiles standalone with pdflatex (TikZ only, no pgfplots data).
+% ============================================================================
+\documentclass[border=8pt]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, shapes.geometric, positioning, calc}
+\begin{document}
+\begin{tikzpicture}[
+  font=\sffamily\small,
+  node distance=1.15cm and 0.9cm,
+  box/.style={draw, rounded corners=2pt, fill=blue!8, minimum width=2.35cm, minimum height=0.78cm, align=center, font=\sffamily\footnotesize},
+  decbox/.style={draw, rounded corners=2pt, fill=orange!12, minimum width=2.35cm, minimum height=0.78cm, align=center, font=\sffamily\footnotesize},
+  outbox/.style={draw, rounded corners=2pt, fill=green!10, minimum width=2.35cm, minimum height=0.78cm, align=center, font=\sffamily\footnotesize},
+  arr/.style={-{Stealth[length=2.6mm]}, thick, shorten >=1pt, shorten <=1pt},
+  every node/.append style={align=center},
+]
+
+% Row 1: dataset and solver configurations
+\node[box] (dataset) {Dataset\\{\footnotesize 120 Sudoku instances\\$N\in\{9,36,81\}$, $r\in\{0.5,0.9\}$\\20 per stratum, seed 42}};
+
+\node[box, right=of dataset] (sat) {SAT configurations\\{\footnotesize 7 configs: 5 AMO encodings\\$\times$ 3 CDCL backends (PySAT)}};
+
+\node[box, right=of sat] (cpsat) {CP-SAT\\{\footnotesize OR-Tools, 1 config\\$N^2$ int vars + all-different}};
+
+\node[box, right=of cpsat] (bt) {Backtracking\\{\footnotesize 1 config, MRV + forward checking}};
+
+% Row 2: guards
+\node[decbox, below=of sat] (timeout) {Wall-clock timeout\\{\footnotesize 10.0 s per run\\SIGKILL enforcement}};
+
+\node[decbox, below=of cpsat] (guard) {Memory resource guard\\{\footnotesize 60\% available RAM\\predeclared exclusion (N=81 pairwise/binary)}};
+
+% Row 3: execution
+\node[box, below=of timeout] (run) {Isolated subprocess run\\{\footnotesize per (puzzle, config)\\t_build, t_solve, t_total}};
+
+% Row 4: validation
+\node[outbox, below=of run] (valid) {Independent validation\\{\footnotesize is\_valid\_solution\_for\_puzzle\\complete grid + clue match}};
+
+% Row 5: statuses
+\node[box, below=of valid] (status) {Run status\\{\footnotesize SOLVED\_VALID / TIMEOUT / BUILD\_FAIL /\\SOLVER\_ERROR / RESOURCE\_GUARD\_LIVE}};
+
+% Row 6: analysis
+\node[outbox, below=of status] (analysis) {Result analysis\\{\footnotesize valid rate, timeout rate,\\median runtime (successes only), tables/figures}};
+
+% Arrows top row (dataset -> each solver family)
+\draw[arr] (dataset) -- (sat);
+\draw[arr] (sat) -- (cpsat);
+\draw[arr] (cpsat) -- (bt);
+
+% Solver families -> guards
+\draw[arr] (sat.south) -- (timeout.north);
+\draw[arr] (cpsat.south) -- (guard.north);
+\draw[arr] (bt.south) -- ++(0,-0.45) -| (timeout.north);
+
+% Guards -> run
+\draw[arr] (timeout.south) -- (run.north);
+\draw[arr] (guard.south) -- ++(0,-0.15) -| (run.north);
+
+% Run -> validation -> status -> analysis
+\draw[arr] (run) -- (valid);
+\draw[arr] (valid) -- (status);
+\draw[arr] (status) -- (analysis);
+
+% Exclusion note
+\node[align=left, font=\scriptsize, text width=3.2cm, fill=yellow!12, draw, rounded corners=2pt, inner sep=3pt] 
+  at ($(run.south)+(0.45,-1.55)$) (note) {
+  Excluded runs (N=81 pairwise/binary)\\
+  are not attempted and\\
+  do not appear in run row.
+};
+\draw[arr, dashed] (guard.south east) -- (note.north west);
+
+\end{tikzpicture}
+\end{document}

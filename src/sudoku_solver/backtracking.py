@@ -55,6 +55,7 @@ class BacktrackingSolver:
         use_ac3: bool = False,
         randomize: bool = False,
         seed: int | None = None,
+        timeout: float | None = None,
     ) -> None:
         self.board = board
         self.n = board.size
@@ -62,6 +63,8 @@ class BacktrackingSolver:
         self.use_ac3 = use_ac3
         self.rng = random.Random(seed) if randomize else None
         self.stats = BacktrackStats()
+        self.timeout = timeout
+        self._deadline: float | None = None
         n, k = self.n, self.k
         # Peer sets: cells sharing a row, column, or subgrid (excluding self).
         self.peers: list[set[int]] = [set() for _ in range(n * n)]
@@ -182,6 +185,8 @@ class BacktrackingSolver:
     def _search(self, limit: int | None) -> bool:
         """Depth-first search.  Returns True when ``limit`` solutions found."""
         self.stats.nodes += 1
+        if self._deadline is not None and time.perf_counter() >= self._deadline:
+            return False  # timeout
         if limit is not None and len(self._found) >= limit:
             return True
         i = self._select_cell()
@@ -245,10 +250,15 @@ class BacktrackingSolver:
         n = self.n
         return Board([flat[r * n : (r + 1) * n] for r in range(n)])
 
-    def solve(self) -> SolverResult:
-        """Find one solution (or prove none exists)."""
+    def solve(self, timeout: float | None = None) -> SolverResult:
+        """Find one solution (or prove none exists).
+
+        If ``timeout`` is given (seconds), the search aborts once the
+        deadline is reached and returns status ``"timeout"``.
+        """
         t0 = time.perf_counter()
         self._found = []
+        self._deadline = t0 + timeout if timeout is not None else None
         if not self._initial_propagate():
             self.stats.runtime = time.perf_counter() - t0
             return SolverResult(
@@ -263,6 +273,12 @@ class BacktrackingSolver:
             return SolverResult(
                 status="solved",
                 board=board,
+                runtime=self.stats.runtime,
+                stats=self.stats.as_dict(),
+            )
+        if self._deadline is not None and time.perf_counter() >= self._deadline:
+            return SolverResult(
+                status="timeout",
                 runtime=self.stats.runtime,
                 stats=self.stats.as_dict(),
             )
@@ -293,11 +309,12 @@ def solve_backtracking(
     use_ac3: bool = False,
     randomize: bool = False,
     seed: int | None = None,
+    timeout: float | None = None,
 ) -> SolverResult:
     """Convenience wrapper: solve ``board`` with default configuration."""
     return BacktrackingSolver(
-        board, use_ac3=use_ac3, randomize=randomize, seed=seed
-    ).solve()
+        board, use_ac3=use_ac3, randomize=randomize, seed=seed, timeout=timeout
+    ).solve(timeout=timeout)
 
 
 def count_solutions(
