@@ -4,22 +4,26 @@
 
 **Research Question:** *How do SAT-based and Non-SAT-based approaches compare in valid solve rate and solve time on identical sampled Sudoku instances?*
 
-To isolate the algorithmic paradigms without commercial license artifacts, commercial solvers (Gurobi and CPLEX) were excluded from this evaluation. The benchmark compares:
+To isolate algorithmic paradigms without commercial license artifacts or vendor caps, commercial solvers (Gurobi and CPLEX) were completely excluded from the benchmark matrix, execution, and results. This study compares:
 - **SAT Solvers**: 7 configurations implemented via PySAT spanning five At-Most-One (AMO) constraint encodings (pairwise, sequential, binary, commander with $b=4$, and product) and three CDCL backends (CaDiCaL 1.5.3, Glucose 4, and MiniSat 2.2).
-- **Non-SAT Solvers**: Google OR-Tools CP-SAT, a state-of-the-art constraint programming solver leveraging integer decision variables in $1..N$ and global `AllDifferent` constraints.
+- **Non-SAT Solvers**: Google OR-Tools CP-SAT, a state-of-the-art constraint programming solver leveraging integer decision variables in $1..N$ and global `AllDifferent` constraints with conflict-driven clause learning.
 
-The experimental corpus uses the standardized 120-puzzle dataset across grid sizes $N \in \{9, 36, 81\}$ and clue removal ratios $r \in \{0.5, 0.9\}$. Evaluated here is the deterministic preliminary sample of one puzzle per $(N, r)$ pair ($k=1$, 6 instances total). Every solver invocation was executed with an isolated subprocess under a strict 10.0-second wall-clock timeout and a 5-minute total wall-clock budget. Every returned solution was independently verified by [`sudoku.validator.is_valid_solution_for_puzzle`](file:///home/guts/P2/SAT/Sudoku-SAT/src/sudoku/validator.py).
+The experiment was conducted on the full standardized **120-puzzle dataset** spanning three grid dimensions $N \in \{9, 36, 81\}$ and two clue removal ratios $r \in \{0.5, 0.9\}$ (20 deterministic puzzle instances per stratum). Every solver run was executed in an isolated child subprocess under a strict 10.0-second wall-clock timeout. Every returned solution was independently verified by [`sudoku.validator.is_valid_solution_for_puzzle`](file:///home/guts/P2/SAT/Sudoku-SAT/src/sudoku/validator.py).
 
 ---
 
 ## 2. Experimental Execution Summary
 
-- **Total Matrix Cells**: 48 cells (6 problem instances $\times$ 8 solver configurations).
-- **Predeclared Exclusions**: 4 runs ($N=81$ pairwise and binary SAT encodings) excluded prior to execution due to memory calibration bounds predicting CNF sizes exceeding 60% of available RAM.
-- **Attempted Invocations**: 44 runs (38 SAT, 6 CP-SAT).
-- **Cumulative Elapsed Wall-Clock Solve Time**: 188.26 seconds (well within the 300 s / 5 min budget).
-- **Unexecuted Budget Exhaustion**: 0 runs.
-- **Per-Run Primary Data**: [`data/results/benchmark_sat_vs_nonsat.csv`](file:///home/guts/P2/SAT/Sudoku-SAT/data/results/benchmark_sat_vs_nonsat.csv).
+- **Total Corpus Size**: 120 puzzles across 6 difficulty strata.
+- **Evaluated Solver Configurations**: 8 configurations (7 SAT, 1 CP-SAT).
+- **Total Recorded Matrix Cells**: 960 cells ($120 \times 8$).
+- **Predeclared Exclusions**: 80 runs ($N=81$ pairwise and binary SAT encodings, 40 each) excluded prior to execution due to memory calibration bounds predicting CNF sizes exceeding 60% of available RAM.
+- **Attempted Invocations**: 880 runs (760 SAT, 120 CP-SAT).
+- **Solution Verification**: 495 valid solutions produced, **100% independently certified correct** by the Sudoku validator.
+- **Invalid Solutions**: 0.
+- **Solver Errors / Crashes**: 0.
+- **Execution Completion**: 100% of all 960 matrix cells executed or accounted for without data loss or duplicate records.
+- **Primary Data**: [`data/results/benchmark_sat_vs_nonsat.csv`](file:///home/guts/P2/SAT/Sudoku-SAT/data/results/benchmark_sat_vs_nonsat.csv) and [`data/results/full_v1.jsonl`](file:///home/guts/P2/SAT/Sudoku-SAT/data/results/full_v1.jsonl).
 
 ---
 
@@ -27,24 +31,24 @@ The experimental corpus uses the standardized 120-puzzle dataset across grid siz
 
 ### Table 1. Primary Aggregate Comparison: SAT vs. Non-SAT Solvers
 
-*Caption: Aggregate comparison of SAT-based and Non-SAT-based solvers across all 6 sampled Sudoku benchmark instances. Performance denominators are strictly declared: Attempted Runs exclude predeclared memory exclusions ($N=81$ pairwise and binary encodings); Valid Solve Rate is $\text{Valid Solutions} / \text{Attempted Runs}$. Commercial solvers (Gurobi, CPLEX) are excluded from the scope to eliminate licensing artifacts.*
+*Caption: Aggregate performance comparison of SAT-based solvers (PySAT) and Non-SAT solver (Google OR-Tools CP-SAT) across the complete 120-puzzle Sudoku benchmark. Denominators are strictly declared: Attempted Runs exclude predeclared memory guard exclusions ($N=81$ pairwise and binary encodings); Valid Solve Rate is $\text{Valid Solutions} / \text{Attempted Runs}$. Commercial solvers (Gurobi, CPLEX) are completely excluded.*
 
 | Metric | SAT Solvers (PySAT) | Non-SAT Solvers (OR-Tools CP-SAT) | Definition / Denominator |
 | :--- | :---: | :---: | :--- |
 | **Solver Configurations** | 7 | 1 | Distinct solver configurations evaluated |
-| **Recorded Matrix Cells** | 42 | 6 | Total problem-configuration combinations ($6 \times \text{Configs}$) |
-| **Predeclared Exclusions** | 4 | 0 | Excluded *a priori* due to memory guard; not executed |
-| **Attempted Runs** | 38 | 6 | Invocations actually executed ($\text{Cells} - \text{Predeclared}$) |
-| **Valid Solutions** | 23 | 4 | Solutions certified correct by independent validator |
-| **Valid Solve Rate** | **60.53%** (23/38) | **66.67%** (4/6) | $\text{Valid Solutions} / \text{Attempted Runs}$ |
-| **Timeouts ($>10.0\text{ s}$)** | 13 | 2 | Timeouts enforced by OS signal |
-| **Timeout Rate (% of attempted)**| 34.21% (13/38) | 33.33% (2/6) | Timeouts / Attempted runs |
+| **Recorded Matrix Cells** | 840 | 120 | Total problem-configuration combinations ($120 \times \text{Configs}$) |
+| **Predeclared Exclusions** | 80 | 0 | Excluded *a priori* due to memory guard; not executed |
+| **Attempted Runs** | 760 | 120 | Invocations actually executed ($\text{Cells} - \text{Predeclared}$) |
+| **Valid Solutions** | 431 | 64 | Solutions certified correct by independent validator |
+| **Valid Solve Rate** | **56.71%** (431/760) | **53.33%** (64/120) | $\text{Valid Solutions} / \text{Attempted Runs}$ |
+| **Timeouts ($>10.0\text{ s}$)** | 328 | 56 | Timeouts enforced by OS signal |
+| **Timeout Rate (% of attempted)**| 43.16% (328/760) | 46.67% (56/120) | Timeouts / Attempted runs |
 | **Resource Guard Live Rejections**| 1 | 0 | Estimated CNF memory exceeded 60% available RAM |
-| **Invalid Solutions** | 1 | 0 | Solutions failing verification or missing payload |
-| **Median Solve Time (Valid)** | **0.0083 s** | **1.3231 s** | Median wall-clock seconds for valid solutions |
-| **25th Percentile ($Q_{25}$)** | 0.0064 s | 0.0236 s | First quartile of valid solve times |
-| **75th Percentile ($Q_{75}$)** | 1.5931 s | 2.6471 s | Third quartile of valid solve times |
-| **IQR (Variability)** | 1.5867 s | 2.6235 s | Interquartile range ($Q_{75} - Q_{25}$) |
+| **Invalid Solutions** | 0 | 0 | Solutions failing verification or missing payload |
+| **Median Solve Time (Valid)** | **0.009367 s** | **0.033353 s** | Median wall-clock seconds for valid solutions |
+| **25th Percentile ($Q_{25}$)** | 0.007619 s | 0.004202 s | First quartile of valid solve times |
+| **75th Percentile ($Q_{75}$)** | 1.012088 s | 2.227055 s | Third quartile of valid solve times |
+| **IQR (Variability)** | 1.004469 s | 2.222852 s | Interquartile range ($Q_{75} - Q_{25}$) |
 
 *CSV Export: [`docs/results/table1_sat_vs_nonsat_primary.csv`](file:///home/guts/P2/SAT/Sudoku-SAT/docs/results/table1_sat_vs_nonsat_primary.csv)*
 
@@ -52,18 +56,18 @@ The experimental corpus uses the standardized 120-puzzle dataset across grid siz
 
 ### Table 2. Per-Solver Breakdown
 
-*Caption: Performance metrics for each individual solver configuration across the six sampled instances ($N \in \{9, 36, 81\} \times r \in \{0.5, 0.9\}$). Predeclared exclusions and live resource guard rejections are reported explicitly.*
+*Caption: Performance metrics for each individual solver configuration across all 120 benchmark instances ($N \in \{9, 36, 81\} \times r \in \{0.5, 0.9\}$, 20 instances per stratum). Predeclared exclusions and live resource guard rejections are explicitly reported.*
 
 | Solver Configuration | Family | Matrix Cells | Predeclared Excluded | Attempted Runs | Valid Solutions | Valid Solve Rate (%) | Timeouts | Resource Guard Live | Invalid Solutions | Median Valid Solve Time (s) |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| `sat_pairwise_cadical153` | SAT | 6 | 2 | 4 | 3 | 75.00% | 1 | 0 | 0 | 0.007115 |
-| `sat_sequential_cadical153`| SAT | 6 | 0 | 6 | 4 | 66.67% | 2 | 0 | 0 | 0.394002 |
-| `sat_binary_cadical153` | SAT | 6 | 2 | 4 | 3 | 75.00% | 1 | 0 | 0 | 0.008097 |
-| `sat_commander_cadical153` | SAT | 6 | 0 | 6 | 4 | 66.67% | 1 | 1 | 0 | 0.409618 |
-| `sat_product_cadical153` | SAT | 6 | 0 | 6 | 4 | 66.67% | 2 | 0 | 0 | 0.635346 |
-| `sat_sequential_glucose4` | SAT | 6 | 0 | 6 | 3 | 50.00% | 3 | 0 | 0 | 0.006083 |
-| `sat_sequential_minisat22` | SAT | 6 | 0 | 6 | 2 | 33.33% | 3 | 0 | 1 | 0.424840 |
-| `cpsat` (OR-Tools) | Non-SAT | 6 | 0 | 6 | 4 | 66.67% | 2 | 0 | 0 | 1.323146 |
+| `sat_pairwise_cadical153` | SAT | 120 | 40 | 80 | 62 | 77.50% | 18 | 0 | 0 | 0.009861 |
+| `sat_sequential_cadical153`| SAT | 120 | 0 | 120 | 62 | 51.67% | 58 | 0 | 0 | 0.007760 |
+| `sat_binary_cadical153` | SAT | 120 | 40 | 80 | 60 | 75.00% | 20 | 0 | 0 | 0.011180 |
+| `sat_commander_cadical153` | SAT | 120 | 0 | 120 | 63 | 52.50% | 56 | 1 | 0 | 0.008905 |
+| `sat_product_cadical153` | SAT | 120 | 0 | 120 | 64 | 53.33% | 56 | 0 | 0 | 0.009016 |
+| `sat_sequential_glucose4` | SAT | 120 | 0 | 120 | 60 | 50.00% | 60 | 0 | 0 | 0.007728 |
+| `sat_sequential_minisat22` | SAT | 120 | 0 | 120 | 60 | 50.00% | 60 | 0 | 0 | 0.006915 |
+| `cpsat` (OR-Tools) | Non-SAT | 120 | 0 | 120 | 64 | 53.33% | 56 | 0 | 0 | 0.033353 |
 
 *CSV Export: [`docs/results/table2_per_solver_breakdown.csv`](file:///home/guts/P2/SAT/Sudoku-SAT/docs/results/table2_per_solver_breakdown.csv)*
 
@@ -71,46 +75,51 @@ The experimental corpus uses the standardized 120-puzzle dataset across grid siz
 
 ### Table 3. Difficulty Stratification ($N \times \text{removal\_ratio}$)
 
-*Caption: Breakdown of solver performance across problem difficulty strata defined by grid size $N$ and clue removal ratio $r$. Solve rates are computed over attempted runs.*
+*Caption: Breakdown of solver performance across the six problem difficulty strata. Each stratum comprises 20 distinct Sudoku instances. Solve rates and timeout rates are computed over attempted runs.*
 
 | Grid Size $N$ | Removal Ratio $r$ | Solver Group | Attempted Runs | Valid Solutions | Valid Solve Rate (%) | Timeouts | Resource Guard Live | Invalid Solutions | Predecl. Excl. | Median Valid Solve Time (s) |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **9** | **0.5** | SAT | 7 | 6 | 85.71% | 0 | 0 | 1 | 0 | 0.006051 |
-| **9** | **0.5** | Non-SAT (CP-SAT) | 1 | 1 | 100.00% | 0 | 0 | 0 | 0 | 0.018030 |
-| **9** | **0.9** | SAT | 7 | 7 | 100.00% | 0 | 0 | 0 | 0 | 0.006925 |
-| **9** | **0.9** | Non-SAT (CP-SAT) | 1 | 1 | 100.00% | 0 | 0 | 0 | 0 | 0.025506 |
-| **36** | **0.5** | SAT | 7 | 3 | 42.86% | 4 | 0 | 0 | 0 | 7.319755 |
-| **36** | **0.5** | Non-SAT (CP-SAT) | 1 | 1 | 100.00% | 0 | 0 | 0 | 0 | 2.726046 |
-| **36** | **0.9** | SAT | 7 | 7 | 100.00% | 0 | 0 | 0 | 0 | 1.264652 |
-| **36** | **0.9** | Non-SAT (CP-SAT) | 1 | 1 | 100.00% | 0 | 0 | 0 | 0 | 2.620786 |
-| **81** | **0.5** | SAT | 5 | 0 | 0.00% | 4 | 1 | 0 | 2 | — |
-| **81** | **0.5** | Non-SAT (CP-SAT) | 1 | 0 | 0.00% | 1 | 0 | 0 | 0 | — |
-| **81** | **0.9** | SAT | 5 | 0 | 0.00% | 5 | 0 | 0 | 2 | — |
-| **81** | **0.9** | Non-SAT (CP-SAT) | 1 | 0 | 0.00% | 1 | 0 | 0 | 0 | — |
+| **9** | **0.5** | SAT | 140 | 140 | 100.00% | 0 | 0 | 0 | 0 | 0.008018 |
+| **9** | **0.5** | Non-SAT (CP-SAT) | 20 | 20 | 100.00% | 0 | 0 | 0 | 0 | 0.003896 |
+| **9** | **0.9** | SAT | 140 | 140 | 100.00% | 0 | 0 | 0 | 0 | 0.008288 |
+| **9** | **0.9** | Non-SAT (CP-SAT) | 20 | 20 | 100.00% | 0 | 0 | 0 | 0 | 0.033160 |
+| **36** | **0.5** | SAT | 140 | 13 | 9.29% | 127 | 0 | 0 | 0 | 6.981681 |
+| **36** | **0.5** | Non-SAT (CP-SAT) | 20 | 4 | 20.00% | 16 | 0 | 0 | 0 | 7.008288 |
+| **36** | **0.9** | SAT | 140 | 138 | 98.57% | 2 | 0 | 0 | 0 | 1.508942 |
+| **36** | **0.9** | Non-SAT (CP-SAT) | 20 | 20 | 100.00% | 0 | 0 | 0 | 0 | 2.270578 |
+| **81** | **0.5** | SAT | 100 | 0 | 0.00% | 99 | 1 | 0 | 40 | — |
+| **81** | **0.5** | Non-SAT (CP-SAT) | 20 | 0 | 0.00% | 20 | 0 | 0 | 0 | — |
+| **81** | **0.9** | SAT | 100 | 0 | 0.00% | 100 | 0 | 0 | 40 | — |
+| **81** | **0.9** | Non-SAT (CP-SAT) | 20 | 0 | 0.00% | 20 | 0 | 0 | 0 | — |
 
 *CSV Export: [`docs/results/table3_difficulty_stratification.csv`](file:///home/guts/P2/SAT/Sudoku-SAT/docs/results/table3_difficulty_stratification.csv)*
 
 ---
 
-## 4. Empirical Interpretation
+## 4. Empirical Findings & Analysis
 
-### 4.1 Comparison of Solve Rates
-- **Overall Solve Rate**: In the absence of commercial license caps, the overall solve rate between SAT solvers (**60.53%**, 23/38) and Non-SAT CP-SAT (**66.67%**, 4/6) is closely matched.
-- **Top Solvers**: The leading SAT configurations (`sat_sequential_cadical153`, `sat_commander_cadical153`, and `sat_product_cadical153`) each achieved an identical solve count to CP-SAT (4 out of 6 instances solved, 66.67%).
-- `sat_pairwise_cadical153` and `sat_binary_cadical153` solved 3 of 4 attempted instances (75.00%), but were excluded from attempting $N=81$ due to CNF memory scaling.
+### 4.1 Overall Solve Rates
+- Over the full 120-puzzle dataset, the overall valid solve rates between SAT solvers (**56.71%**, 431/760) and Non-SAT CP-SAT (**53.33%**, 64/120) are remarkably comparable.
+- When evaluating across all 120 puzzles without memory exclusions, `sat_product_cadical153` solved exactly **64 puzzles** (53.33%), matching Google OR-Tools CP-SAT's **64 puzzles** (53.33%). `sat_commander_cadical153` solved 63 puzzles (52.50%), and `sat_sequential_cadical153` solved 62 puzzles (51.67%).
+- Solvers with quadratic memory overhead (`pairwise` and `binary`) achieved higher percentages on attempted runs (77.50% and 75.00%) only because they were prevented from attempting the unsolvable $N=81$ stratum by the memory guard.
 
-### 4.2 Solve Times and Latency Dynamics
-- **$9 \times 9$ Grids**: SAT solvers demonstrate superior raw execution speed on standard instances, with median solve times of **~0.006–0.007 s**, compared to **0.018–0.026 s** for CP-SAT (approximately $3\times$ faster).
-- **$36 \times 36$ Grids (Phase Transition & Robustness)**:
-  - On the underconstrained / high-removal instance ($N=36, r=0.9$), SAT solvers solved all 7 configurations with a median solve time of **1.26 s** (and as fast as 0.78 s with Sequential CaDiCaL), outperforming CP-SAT (2.62 s).
-  - On the more constrained / low-removal instance ($N=36, r=0.5$), CP-SAT demonstrated superior propagation stability, solving the puzzle in **2.73 s**, whereas 4 out of 7 SAT solvers timed out ($>10\text{ s}$), and the surviving SAT solvers required between 4.22 s and 8.54 s.
-- **$81 \times 81$ Grids**: Neither SAT solvers nor CP-SAT produced a solution within the 10.0-second timeout. All executed runs timed out, indicating that $N=81$ represents a hard ceiling under a 10-second budget.
+### 4.2 Stratum Dynamics and Phase Transitions
+1. **Standard $9 \times 9$ Instances ($N=9$)**:
+   - Both SAT and CP-SAT achieved a **100.0% solve rate** on all 40 puzzles (160/160 runs for each removal ratio).
+   - For $r=0.5$, CP-SAT had a slightly lower median solve time (0.0039 s) than SAT (0.0080 s), but for $r=0.9$, SAT solved significantly faster (median 0.0083 s vs. 0.0332 s for CP-SAT, a $\approx 4\times$ speed advantage).
+2. **Medium $36 \times 36$ Instances ($N=36$)**:
+   - **High Clue Removal ($r=0.9$, underconstrained)**: Both paradigms excelled. CP-SAT solved 100.0% (20/20) with median solve time 2.27 s. SAT solvers solved 98.57% (138/140), with 5 out of 7 SAT configurations solving 20/20 and an overall median solve time of **1.51 s** (faster than CP-SAT).
+   - **Low Clue Removal ($r=0.5$, constrained)**: Represents a severe difficulty spike. CP-SAT solved 20.0% (4/20), while SAT solvers solved 9.29% (13/140). Most runs timed out (>10.0 s), with median valid solve times clustering tightly around 7.0 s for both paradigms.
+3. **Large $81 \times 81$ Instances ($N=81$)**:
+   - Neither SAT nor CP-SAT solved any instance within the 10.0-second limit (0.0% solve rate across 120 attempted SAT runs and 40 attempted CP-SAT runs).
+   - This empirically confirms that $N=81$ Sudoku requires significantly greater runtime budgets or domain-specific decomposition techniques regardless of whether SAT or CP-SAT is utilized.
 
-### 4.3 Anomalies, Memory Guards, and Verification
-- Every valid solution was independently verified by the verification oracle.
-- One historical run (`sudoku_N009_r0.5_i006` with `sat_sequential_minisat22`) was recorded as `INVALID_SOLUTION` due to an empty solution payload during an earlier interrupted execution.
-- Live resource guarding successfully aborted `sat_commander_cadical153` at $N=81, r=0.5$ when estimated CNF memory (1.72 GB) exceeded 60% of available RAM (1.56 GB).
+### 4.3 Constraint Encoding Impact on SAT Performance
+- **Product Encoding** (`sat_product_cadical153`): Demonstrates the best overall balance between clause count ($O(N\sqrt{N})$) and propagation efficiency, achieving the highest total valid solves (64) among SAT solvers.
+- **Commander Encoding** (`sat_commander_cadical153`): Close second with 63 valid solves, with 1 run safely aborted by live RAM guard at $N=81$.
+- **Sequential Counter** (`sat_sequential_cadical153`): Consistent $O(N)$ auxiliary variable scaling, achieving 62 valid solves with CaDiCaL, and 60 valid solves each with Glucose 4 and MiniSat 2.2.
+- **Pairwise & Binary**: While effective at $N \le 36$, they cannot scale to $N=81$ due to $O(N^4)$ clause explosion or large auxiliary trees.
 
-### 4.4 Limitations and Recommendation
-- **Sample Size**: These empirical results reflect one deterministic puzzle per difficulty stratum ($k=1$, 6 instances). While effective for direct side-by-side comparison under budget constraints, findings cannot establish formal statistical significance.
-- **Recommendation**: Run the full 20-puzzle-per-stratum experiment (120 puzzles total) across the top SAT configurations (`sat_sequential_cadical153`, `sat_commander_cadical153`, `sat_product_cadical153`) and CP-SAT to validate these observations with statistical confidence.
+### 4.4 Verification and Correctness
+- All 495 returned solutions were strictly and independently verified by [`is_valid_solution_for_puzzle`](file:///home/guts/P2/SAT/Sudoku-SAT/src/sudoku/validator.py).
+- Zero false positives, zero invalid solutions, and zero solver crashes occurred across all 960 evaluations.
