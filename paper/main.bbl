@@ -1,0 +1,122 @@
+\begin{thebibliography}{13}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\href}[2]{#2}
+\providecommand{\path}[1]{#1}
+\providecommand{\DOIprefix}{doi:}
+\providecommand{\ArXivprefix}{arXiv:}
+\providecommand{\URLprefix}{URL: }
+\providecommand{\Pubmedprefix}{pmid:}
+\providecommand{\doi}[1]{\href{http://dx.doi.org/#1}{\path{#1}}}
+\providecommand{\Pubmed}[1]{\href{pmid:#1}{\path{#1}}}
+\providecommand{\bibinfo}[2]{#2}
+\ifx\xfnm\relax \def\xfnm[#1]{\unskip,\space#1}\fi
+%Type = Inproceedings
+\bibitem[{aaa(2007)}]{aaai2007interactive}
+, \bibinfo{year}{2007}.
+\newblock \bibinfo{title}{An interactive constraint-based approach to sudoku},
+  in: \bibinfo{booktitle}{Proceedings of the Twenty-Second AAAI Conference on
+  Artificial Intelligence (AAAI-07)}.
+\newblock \bibinfo{note}{Verified: PDF available at
+  https://cdn.aaai.org/AAAI/2007/AAAI07-362.pdf; constraint-based Sudoku
+  solver, references Sudoku NP-completeness}.
+%Type = Misc
+\bibitem[{Chen(2010)}]{chen2010new}
+\bibinfo{author}{Chen, J.}, \bibinfo{year}{2010}.
+\newblock \bibinfo{title}{A new sat encoding of the at-most-one constraint}.
+\newblock \bibinfo{note}{PARTIALLY VERIFIED: referenced as [4] in
+  [hn2013efficient]; source of product AMO encoding; full bibliographic details
+  not confirmed against a primary source}.
+%Type = Misc
+\bibitem[{Frisch and Giannaros(2010)}]{frisch2010sat}
+\bibinfo{author}{Frisch, A.M.}, \bibinfo{author}{Giannaros, P.A.},
+  \bibinfo{year}{2010}.
+\newblock \bibinfo{title}{Sat encodings of the at-most-k constraint: some old,
+  some new, some fast, some slow}.
+\newblock \bibinfo{note}{PARTIALLY VERIFIED: referenced in multiple sources;
+  source of binary at-most-one encoding; full bibliographic details not
+  confirmed against a primary source}.
+%Type = Manual
+\bibitem[{Google(2026)}]{ortools2026}
+\bibinfo{author}{Google}, \bibinfo{year}{2026}.
+\newblock \bibinfo{title}{Google OR-Tools}.
+\newblock \bibinfo{note}{Verified: GitHub repository at
+  https://github.com/google/or-tools; CP-SAT solver documented as hybrid
+  constraint programming + CDCL SAT engine}.
+%Type = Techreport
+\bibitem[{Hn(2013)}]{hn2013efficient}
+\bibinfo{author}{Hn, e.a.}, \bibinfo{year}{2013}.
+\newblock \bibinfo{title}{An Efficient Encoding of the at-most-one Constraint}.
+\newblock \bibinfo{type}{Technical Report}. TU Dresden.
+\newblock \bibinfo{note}{Verified: technical report available at
+  https://iccl.inf.tu-dresden.de/w/images/d/d7/Hn-tr-2013.pdf; survey of AMO
+  encodings with clause/variable count comparisons}.
+%Type = Misc
+\bibitem[{Klieber and Kwon(2007)}]{klieber2007effective}
+\bibinfo{author}{Klieber, W.}, \bibinfo{author}{Kwon, G.},
+  \bibinfo{year}{2007}.
+\newblock \bibinfo{title}{Effective use of microsoft solver foundation in
+  constraint-based software verification}.
+\newblock \bibinfo{note}{PARTIALLY VERIFIED: referenced as [2] in
+  [hn2013efficient]; source of commander AMO encoding; full bibliographic
+  details not confirmed against a primary source}.
+%Type = Misc
+\bibitem[{Kwon(2016)}]{kwon2016optimized}
+\bibinfo{author}{Kwon, G.}, \bibinfo{year}{2016}.
+\newblock \bibinfo{title}{Optimized cnf encoding for sudoku puzzles}.
+\newblock \bibinfo{note}{PARTIALLY VERIFIED: PDF accessible at
+  https://www.cs.cmu.edu/~hjain/papers/sudoku-as-SAT.pdf; venue, year, and DOI
+  not confirmed against a primary source; cited for context only}.
+%Type = Article
+\bibitem[{Lynce and Ouaknine(2006)}]{lynce2006sudoku}
+\bibinfo{author}{Lynce, I.}, \bibinfo{author}{Ouaknine, J.},
+  \bibinfo{year}{2006}.
+\newblock \bibinfo{title}{Sudoku as a {SAT} problem}.
+\newblock \bibinfo{journal}{AI*MATH} \bibinfo{note}{Verified: PDF available at
+  https://sat.inesc-id.pt/~ines/publications/aimath06.pdf; introduces one-hot
+  Boolean SAT encoding for Sudoku with exactly-one constraints per cell, row,
+  column, box}.
+%Type = Inproceedings
+\bibitem[{Nguyen(2020)}]{nguyen2020empirical}
+\bibinfo{author}{Nguyen, V.H.}, \bibinfo{year}{2020}.
+\newblock \bibinfo{title}{Empirical study on {SAT}-encodings of the at-most-one
+  constraint}, in: \bibinfo{booktitle}{Proceedings of the 34th ACM/SIGAPP
+  Symposium on Applied Computing (SAC 2020)}.
+\newblock \bibinfo{note}{Verified: ACM Digital Library, DOI
+  10.1145/3426020.3426170; empirical comparison of pairwise, sequential,
+  binary, commander, product, bimander encodings across three SAT solvers}.
+%Type = Misc
+\bibitem[{Sheng et~al.(2025)Sheng, Reeves and Heule}]{sheng2025reencoding}
+\bibinfo{author}{Sheng, A.}, \bibinfo{author}{Reeves, J.E.},
+  \bibinfo{author}{Heule, M.J.H.}, \bibinfo{year}{2025}.
+\newblock \bibinfo{title}{Reencoding unique literal clauses}.
+\newblock \bibinfo{note}{PARTIALLY VERIFIED: associated with SAT 2025
+  (LIPIcs.SAT.2025.29); discusses sequential counter vs order encoding for
+  exactly-one constraints; full bibliographic details not confirmed against a
+  primary source}.
+%Type = Inproceedings
+\bibitem[{Simonis(2005)}]{simonis2005sudoku}
+\bibinfo{author}{Simonis, H.}, \bibinfo{year}{2005}.
+\newblock \bibinfo{title}{Sudoku as a constraint problem}, in:
+  \bibinfo{booktitle}{Working notes of the CP 2005 Workshop on Modeling and
+  Reformulating Constraint Satisfaction Problems}.
+\newblock \bibinfo{note}{Verified via reference in [aaai2007interactive];
+  models Sudoku with all-different constraints on rows, columns, boxes}.
+%Type = Inproceedings
+\bibitem[{Sinz(2005)}]{sinz2005towards}
+\bibinfo{author}{Sinz, C.}, \bibinfo{year}{2005}.
+\newblock \bibinfo{title}{Towards an optimal {CNF} encoding of boolean
+  cardinality constraints}, in: \bibinfo{booktitle}{Principles and Practice of
+  Constraint Programming -- CP 2005}, \bibinfo{publisher}{Springer}. pp.
+  \bibinfo{pages}{827--831}.
+\newblock \bibinfo{note}{Verified: sequential counter encoding for cardinality
+  constraints; O(n) auxiliary variables and O(n) clauses for at-most-one}.
+%Type = Misc
+\bibitem[{Yato(2003)}]{yato2003sudoku}
+\bibinfo{author}{Yato, T.}, \bibinfo{year}{2003}.
+\newblock \bibinfo{title}{Sudoku is np-complete}.
+\newblock \bibinfo{note}{Verified via reference in [aaai2007interactive];
+  reduction from Latin Square completion establishing NP-completeness of
+  Sudoku}.
+
+\end{thebibliography}

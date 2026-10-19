@@ -1,54 +1,27 @@
 % ============================================================================
 % Figure 1: Overall solver-family comparison (valid-solution rate & timeout rate)
-% Compiles standalone with pdflatex; also \input-able inside a figure environment.
 % Data source: paper/tables/table1_aggregate_comparison.csv (audited against
 % data/results/benchmark_sat_vs_nonsat.csv and data/results/backtracking_results.csv).
 % Denominators: SAT 760 attempted (80 predeclared exclusions removed);
 % CP-SAT 120 attempted; Backtracking 120 attempted (0 exclusions).
+% Layout: groupplot (requires \usepgfplotslibrary{groupplots}, already in main.tex);
+% widths scale with \linewidth so it fits a single-column `figure`.
 % ============================================================================
-\documentclass[border=5pt]{standalone}
-\usepackage{pgfplots}
-\pgfplotsset{compat=1.18}
-\begin{document}
-\begin{tikzpicture}
-  % ---- Panel (a): valid-solution rate ----
-  \begin{axis}[
-    name=plotA,
-    ybar, bar width=0.5cm, bar shift=0pt,
-    symbolic x coords={SAT,CP-SAT,Backtracking},
-    xtick=data,
-    ylabel={Valid-solution rate (\%)},
-    ymin=0, ymax=70,
-    ymajorgrids=true,
-    title style={font=\bfseries},
-    title={(a) Valid-solution rate},
-    width=0.47\textwidth, height=5.6cm,
-    nodes near coords,
-    nodes near coords align={vertical},
-    every node near coord/.append style={font=\tiny\bfseries, rotate=90, anchor=west},
-  ]
-  \addplot coordinates {(SAT,56.71) (CP-SAT,53.33) (Backtracking,33.33)};
-  \addlegendentry{Valid rate}
-  \end{axis}
-
-  % ---- Panel (b): timeout rate ----
-  \begin{axis}[
-    at={(plotA.east)}, anchor=west, xshift=1.0cm,
-    ybar, bar width=0.5cm, bar shift=0pt,
-    symbolic x coords={SAT,CP-SAT,Backtracking},
-    xtick=data,
-    ylabel={Timeout rate (\%) of attempted},
-    ymin=0, ymax=75,
-    ymajorgrids=true,
-    title style={font=\bfseries},
-    title={(b) Timeout rate},
-    width=0.47\textwidth, height=5.6cm,
-    nodes near coords,
-    nodes near coords align={vertical},
-    every node near coord/.append style={font=\tiny\bfseries, rotate=90, anchor=west},
-  ]
-  \addplot coordinates {(SAT,43.16) (CP-SAT,46.67) (Backtracking,66.67)};
-  \addlegendentry{Timeout rate}
-  \end{axis}
+\begin{tikzpicture}[solverbars/.style={ybar, bar width=0.5cm}]
+\begin{groupplot}[
+  group style={group size=2 by 1, horizontal sep=1.7cm},
+  width=0.39\linewidth, height=5.4cm,
+  symbolic x coords={SAT,CP-SAT,Backtracking}, xtick=data,
+  enlarge x limits=0.25,
+  x tick label style={font=\footnotesize, rotate=20, anchor=east},
+  ymin=0, ymajorgrids=true,
+  title style={font=\bfseries\small},
+  nodes near coords={\pgfmathprintnumber[fixed,precision=2,fixed zerofill]{\pgfplotspointmeta}}, nodes near coords align={vertical},
+  every node near coord/.append style={font=\scriptsize\bfseries},
+]
+\nextgroupplot[solverbars, title={(a) Valid-solution rate}, ylabel={Valid-solution rate (\%)}, ymax=70]
+\addplot[fill=blue!50!black!60, draw=black] coordinates {(SAT,56.71) (CP-SAT,53.33) (Backtracking,33.33)};
+\nextgroupplot[solverbars, title={(b) Timeout rate}, ylabel={Timeout rate (\%) of attempted}, ymax=80]
+\addplot[fill=red!50!black!60, draw=black] coordinates {(SAT,43.16) (CP-SAT,46.67) (Backtracking,66.67)};
+\end{groupplot}
 \end{tikzpicture}
-\end{document}

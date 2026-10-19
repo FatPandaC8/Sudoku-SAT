@@ -6,10 +6,6 @@
 % Pairwise and binary each have 40 predeclared N=81 exclusions (attempted=80);
 % commander has 1 live resource-guard rejection (attempted=120).
 % ============================================================================
-\documentclass[border=5pt]{standalone}
-\usepackage{pgfplots}
-\pgfplotsset{compat=1.18}
-\begin{document}
 \begin{tikzpicture}
   % ---- Panel (a): valid-solution rate per SAT config ----
   \begin{axis}[
@@ -35,7 +31,7 @@
     ymajorgrids=true,
     enlargelimits=0.12,
     legend style={at={(0.5,-0.42)}, anchor=north, font=\tiny},
-    width=\textwidth, height=5.9cm,
+    width=0.47\textwidth, height=5.9cm,
     title style={font=\bfseries},
     title={(a) Valid-solution rate},
     nodes near coords,
@@ -47,7 +43,7 @@
 
   % ---- Panel (b): timeout rate per SAT config ----
   \begin{axis}[
-    at={(plotA.east)}, anchor=west, xshift=1.0cm,
+    at={(plotA.east)}, anchor=west, xshift=1.5cm,
     ybar, bar width=0.34cm,
     symbolic x coords={
       pw_cad,seq_cad,bin_cad,com_cad,prod_cad,seq_glu,seq_mini
@@ -68,7 +64,7 @@
     ymin=0, ymax=65,
     ymajorgrids=true,
     enlargelimits=0.12,
-    width=\textwidth, height=5.9cm,
+    width=0.47\textwidth, height=5.9cm,
     title style={font=\bfseries},
     title={(b) Timeout rate},
     nodes near coords,
@@ -78,4 +74,3 @@
   \addplot coordinates {(pw_cad,22.50) (seq_cad,48.33) (bin_cad,25.00) (com_cad,46.67) (prod_cad,46.67) (seq_glu,50.00) (seq_mini,50.00)};
   \end{axis}
 \end{tikzpicture}
-\end{document}

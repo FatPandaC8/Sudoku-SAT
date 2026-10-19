@@ -5,11 +5,24 @@
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{graphicx}
+\usepackage{adjustbox}        % \adjustbox{max width=\linewidth}: shrink wide tables only
+\usepackage[T1]{fontenc}
 \usepackage{tikz}
+\usetikzlibrary{positioning, calc}
 \usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
 \pgfplotsset{compat=1.18}
-\usepackage{url}
+\usepackage{xurl}             % loads url; allows line breaks inside long paths
 \usepackage{hyperref}
+
+% Breakable monospaced code/paths (type underscores unescaped inside \code{...}).
+\newcommand{\code}[1]{\texttt{\nolinkurl{#1}}}
+% Allow line breaks after escaped underscores in ordinary \texttt{...}.
+\AtBeginDocument{\renewcommand{\_}{\textunderscore\penalty0\hspace{0pt}}}
+\emergencystretch=3em
+
+\shorttitle{SAT vs.\ CP-SAT vs.\ Classical Backtracking for Generalized Sudoku}
+\shortauthors{Ph\d{a}m Gia B\'ach}
 
 \begin{document}
 
@@ -17,23 +30,16 @@
 % TITLE AND ABSTRACT
 % ============================================================================
 
-\title[short title]{SAT vs.\ CP-SAT vs.\ Classical Backtracking for Generalized Sudoku: An Empirical Benchmark}
+\title{SAT vs.\ CP-SAT vs.\ Classical Backtracking for Generalized Sudoku: An Empirical Benchmark}
 
-\author[1]{[Author Name]}\ead{[email]}
+\author[1]{Ph\d{a}m Gia B\'ach}
 
-\affiliation[1]{
-    organization=[Institution],
-    addressline=[Address],
-    city=[City],
-    postcode=[Postal Code],
-    state=[State],
-    country=[Country]
-}
+\cormark[1]
+
+\cortext[1]{Corresponding author}
 
 \begin{abstract}
-
 This paper presents an empirical comparison of three solver families---SAT, constraint programming (CP-SAT), and classical backtracking---on a shared benchmark of generalized Sudoku instances. We evaluate seven PySAT configurations spanning five At-Most-One (AMO) encodings (pairwise, sequential counter, binary, commander, product) across three CDCL backends (CaDiCaL 1.5.3, Glucose 4, MiniSat 2.2), Google OR-Tools CP-SAT, and an optimized backtracking implementation using minimum-remaining-values (MRV) cell selection with forward checking. The benchmark comprises 120 Sudoku instances across grid sizes \(N \in \{9, 36, 81\}\) and clue-removal ratios \(r \in \{0.5, 0.9\}\), with 20 instances per stratum, generated from a single seed (42). Every solver run is subject to a 10.0-second wall-clock timeout, a 60\% available-memory resource guard, and independent solution verification. Across 1{,}000 attempted runs (760 SAT, 120 CP-SAT, 120 backtracking), SAT solvers produce 431 valid solutions (56.71\%), CP-SAT produces 64 (53.33\%), and backtracking produces 40 (33.33\%), all independently verified with zero invalid solutions. Both SAT and CP-SAT achieve 100\% solve rates on \(9\times9\) instances and zero valid solutions on \(81\times81\) within the timeout. On \(36\times36\) at \(r=0.5\), solve rates fall below 21\% for all families. We find no evidence of universal superiority: pooling seven SAT configurations gives SAT a different aggregation structure than the two single-configuration baselines, and pairwise/binary SAT encodings are predeclared excluded at \(N=81\) by the memory guard, leaving their performance at that size unknown. No confidence intervals, hypothesis tests, or replications are reported; all findings are descriptive and timeout-censored.
-
 \end{abstract}
 
 \begin{keywords}
@@ -62,7 +68,7 @@ This study addresses three experimental questions:
     \item \textbf{RQ3:} How do grid size (\(N \in \{9, 36, 81\}\)) and clue-removal ratio (\(r \in \{0.5, 0.9\}\)) relate to success rate and solve time across solver families?
 \end{enumerate}
 
-The defensible contributions of this paper are: (i) a documented benchmark of 1{,}000 attempted solver runs across three solver families and twelve problem strata, with raw results and an independent validator; (ii) descriptive evidence that SAT and CP-SAT achieve comparable valid solve rates (56.71\% vs.\ 53.33\%) on shared instances, while classical backtracking solves 40 of 120 instances, all confined to \(N=9\); (iii) documentation of a hardness cliff at \(N=36, r=0.5\) (solve rates below 21\% for all families) and intractability at \(N=81\) within a 10-second timeout; and (iv) explicit accounting of predeclared memory-guard exclusions, live resource-guard rejections, and timeout censoring, which limit the inferential strength of all comparisons. We make no claim of universal superiority for any solver family, no claim of statistical significance, and no generalization beyond the tested dataset.
+The defensible contributions of this paper are: (i) a documented benchmark of 1{,}000 attempted solver runs across three solver families and six problem strata, with raw results and an independent validator; (ii) descriptive evidence that SAT and CP-SAT achieve comparable valid solve rates (56.71\% vs.\ 53.33\%) on shared instances, while classical backtracking solves 40 of 120 instances, all confined to \(N=9\); (iii) documentation of a hardness cliff at \(N=36, r=0.5\) (solve rates below 21\% for all families) and intractability at \(N=81\) within a 10-second timeout; and (iv) explicit accounting of predeclared memory-guard exclusions, live resource-guard rejections, and timeout censoring, which limit the inferential strength of all comparisons. We make no claim of universal superiority for any solver family, no claim of statistical significance, and no generalization beyond the tested dataset.
 
 % ============================================================================
 % 2. RELATED WORK
@@ -70,35 +76,29 @@ The defensible contributions of this paper are: (i) a documented benchmark of 1{
 
 \section{Related Work}
 
-\subsection{SAT formulations for Sudoku}
+\subsection{SAT formulations and At-Most-One encodings}
 
-\citet{lynce2006sudoku} introduced the first SAT encodings for Sudoku, proposing minimal and extended CNF formulations using one-hot Boolean variables with exactly-one constraints per cell, row, column, and box. They report that unit propagation on the extended encoding can solve approximately half of hard \(9\times9\) puzzles without search. This work established the one-hot Boolean formulation---\(N^3\) primary variables and \(4N^2\) exactly-one groups---that underlies all SAT configurations evaluated here.
+\citet{lynce2006sudoku} introduced the first SAT encodings for Sudoku, proposing minimal and extended CNF formulations using one-hot Boolean variables with exactly-one constraints per cell, row, column, and box. They report that unit propagation on the extended encoding can solve approximately half of hard \(9\times9\) puzzles without search. This work established the one-hot Boolean formulation---\(N^3\) primary variables and \(4N^2\) exactly-one groups---that underlies all SAT configurations evaluated here. \citet{kwon2016optimized} presented an optimized CNF encoding for Sudoku aimed at reducing clause count for larger puzzles; it is cited for context only, and no technical claim in this paper depends on it.
 
-\citet{kwon2016optimized} presented an optimized CNF encoding for Sudoku aimed at reducing clause count for larger puzzles. Full bibliographic details (venue, year, DOI) could not be verified against a primary source; this reference is cited for context only and no technical claim in this paper depends on it.
+Five AMO encodings are implemented and evaluated. \citet{sinz2005towards} introduced the sequential counter encoding for Boolean cardinality constraints, using \(O(n)\) auxiliary variables and \(O(n)\) clauses for an at-most-one constraint over \(n\) literals; this is the basis of the sequential encoding in \texttt{sat.py}. \citet{klieber2007effective} proposed the commander encoding, which partitions literals into subgroups with commander variables and a group-size parameter \(b\); the implementation uses \(b=4\). \citet{chen2010new} introduced the product encoding, arranging literals in a two-dimensional grid with row and column indicator variables. \citet{frisch2010sat} presented binary/bitwise at-most-one encodings using \(\lceil\log_2 n\rceil\) auxiliary variables.
 
-\subsection{At-Most-One encodings}
+\citet{nguyen2020empirical} provided an empirical comparison of AMO encodings (pairwise, sequential, binary, commander, product, bimander) across three SAT solvers on generic benchmarks, finding that encoding choice has a measurable impact on solver performance. Our study applies the same five encodings to Sudoku specifically, across multiple grid sizes and three CDCL backends, with independent solution validation. \citet{hn2013efficient} is a technical survey of AMO encodings with clause and variable count comparisons; it provides the complexity comparison used in Section~\ref{sec:formulation} but reports no empirical Sudoku runtime results.
 
-Five AMO encodings are implemented and evaluated. \citet{sinz2005towards} introduced the sequential counter encoding for Boolean cardinality constraints, using \(O(n)\) auxiliary variables and \(O(n)\) clauses for an at-most-one constraint over \(n\) literals; this is the basis of the sequential encoding in \texttt{sat.py}. \citet{klieber2007effective} proposed the commander encoding, which partitions literals into subgroups with commander variables and a group-size parameter \(b\); the implementation uses \(b=4\). Full bibliographic verification of \citet{klieber2007effective} against a primary source is incomplete; it is referenced as a secondary citation in \citet{hn2013efficient}. \citet{chen2010new} introduced the product encoding, arranging literals in a two-dimensional grid with row and column indicator variables; full bibliographic verification against a primary source is incomplete. \citet{frisch2010sat} presented binary/bitwise at-most-one encodings using \(\lceil\log_2 n\rceil\) auxiliary variables. Full bibliographic verification against a primary source is incomplete.
-
-\citet{nguyen2020empirical} provided an empirical comparison of AMO encodings (pairwise, sequential, binary, commander, product, bimander) across three SAT solvers on generic benchmarks, finding that encoding choice has a measurable impact on solver performance. Our study applies the same five encodings to Sudoku specifically, across multiple grid sizes and three CDCL backends, with independent solution validation. \citet{hn2013efficient} is a technical survey of AMO encodings with clause and variable count comparisons; it provides the complexity table used in Section 3 but reports no empirical Sudoku runtime results.
-
-\subsection{Constraint programming and CP-SAT}
+\subsection{Constraint programming, CP-SAT, and classical backtracking}
 
 \citet{simonis2005sudoku} modeled Sudoku as a constraint satisfaction problem using all-different constraints on rows, columns, and boxes, contrasting 27 arity-9 all-different constraints with 810 binary inequality constraints. \citet{aaai2007interactive} presented an interactive constraint-based Sudoku solver and confirmed that Sudoku is NP-complete via \citet{yato2003sudoku}; this work is educational/interactive in focus and reports no cross-solver benchmarking. OR-Tools CP-SAT \citep{ortools2026} is a hybrid constraint-programming solver built on a CDCL SAT engine and enriched with MIP techniques; it accepts integer decision variables and global all-different constraints directly. The CP-SAT configuration evaluated here uses \(N^2\) integer variables in domain \(1..N\) with all-different constraints per row, column, and box, plus unit equality constraints for clues.
 
-\subsection{Classical backtracking}
-
-Classical backtracking for Sudoku selects an unassigned variable, tries candidate values, and backtracks on contradiction. The implementation evaluated here uses minimum-remaining-values (MRV) cell selection, forward checking after each assignment, and optional AC-3 propagation over binary peer inequalities (disabled in the benchmark runs). Candidates are tried in ascending order; MRV ties break on lowest cell index (row-major). No least-constraining-value (LCV) heuristic and no degree heuristic are implemented. Source inspection confirms these design choices; see Section 3 and \texttt{src/sudoku\_solver/backtracking.py}.
+Classical backtracking for Sudoku selects an unassigned variable, tries candidate values, and backtracks on contradiction. The implementation evaluated here uses minimum-remaining-values (MRV) cell selection, forward checking after each assignment, and optional AC-3 propagation over binary peer inequalities (disabled in the benchmark runs). Candidates are tried in ascending order; MRV ties break on lowest cell index (row-major). No least-constraining-value (LCV) heuristic and no degree heuristic are implemented; see Section~\ref{sec:backtracking}.
 
 \subsection{Solver benchmarking and reproducibility}
 
-\citet{nguyen2020empirical} and \citet{sheng2025reencoding} discuss encoding-size versus runtime trade-offs and the importance of empirical evaluation over theoretical clause counts alone. Full bibliographic verification of \citet{sheng2025reencoding} against a primary source is incomplete. This study contributes an empirical Sudoku-specific comparison but shares the limitations of single-seed, single-run benchmarks: no confidence intervals, no replication, and timeout-censored runtimes preclude inferential claims (Sections 5--7).
+\citet{nguyen2020empirical} and \citet{sheng2025reencoding} discuss encoding-size versus runtime trade-offs and the importance of empirical evaluation over theoretical clause counts alone. This study contributes an empirical Sudoku-specific comparison but shares the limitations of single-seed, single-run benchmarks: no confidence intervals, no replication, and timeout-censored runtimes preclude inferential claims (Sections~\ref{sec:results}--\ref{sec:threats}).
 
 % ============================================================================
 % 3. PROBLEM FORMULATION AND SOLVER METHODS
 % ============================================================================
 
-\section{Problem Formulation and Solver Methods}
+\section{Problem Formulation and Solver Methods}\label{sec:formulation}
 
 \subsection{Generalized \(N\times N\) Sudoku}
 
@@ -110,7 +110,7 @@ A Sudoku puzzle of size \(N\times N\), where \(N=k^2\) for box size \(k\), consi
     \item every pre-filled clue matches the corresponding cell in the solution.
 \end{enumerate}
 
-A solution is valid if it satisfies all constraints. Solution uniqueness is not required: any valid completion matching the clues counts as correct, as implemented in \texttt{is\_valid\_solution\_for\_puzzle} (\texttt{src/sudoku/validator.py}).
+A solution is valid if it satisfies all constraints. Solution uniqueness is not required: any valid completion matching the clues counts as correct, as implemented in \code{is_valid_solution_for_puzzle} (\code{src/sudoku/validator.py}).
 
 \subsection{SAT formulation and AMO encodings}
 
@@ -123,44 +123,45 @@ The SAT model uses \(N^3\) one-hot Boolean variables \(x[r,c,v]\), where \(x[r,c
     \item \textbf{Clues}: positive unit clauses for pre-filled cells.
 \end{enumerate}
 
-There are \(4N^2\) exactly-one groups in total. Each group is encoded as one at-least-one (ALO) clause plus one at-most-one (AMO) encoding chosen from five alternatives implemented in \texttt{src/sudoku/solvers/sat.py}:
+There are \(4N^2\) exactly-one groups in total. Each group is encoded as one at-least-one (ALO) clause plus one at-most-one (AMO) encoding chosen from five alternatives implemented in \code{src/sudoku/solvers/sat.py}:
 
 \begin{itemize}
     \item \textbf{Pairwise}: forbids every pair of literals in the group; \(0\) auxiliary variables, \(N(N-1)/2\) clauses per group, \(O(N^2)\) clauses per group.
     \item \textbf{Sequential counter} (\citeyear{sinz2005towards}): prefix variables record whether a literal in the prefix is true; \(N-1\) auxiliary variables, \(O(N)\) clauses per group.
     \item \textbf{Binary} (\citeyear{frisch2010sat}): each literal forces a distinct binary bit pattern on auxiliary variables; \(\lceil\log_2 N\rceil\) auxiliary variables, \(O(N\log N)\) clauses per group.
     \item \textbf{Commander} (\citeyear{klieber2007effective}): literals are partitioned into subgroups of size \(b\) (default \(b=4\)) with commander variables; \(\lceil N/b\rceil\) auxiliary variables per group.
-    \item \textbf{Product} (\citeyear{chen2010new}): literals are arranged in a 2D grid with row and column indicator variables; approximately \(\lceil\sqrt{N}\rceil + \lceil N/\lceil\sqrt{N}\rceil\rceil\) auxiliary variables per group.
+    \item \textbf{Product} (\citeyear{chen2010new}): literals are arranged in a 2D grid with row and column indicator variables; approximately \(\lceil\sqrt{N}\rceil +\allowbreak \lceil N/\lceil\sqrt{N}\rceil\rceil\) auxiliary variables per group.
 \end{itemize}
 
-Clue cells are encoded as positive unit clauses. PySAT CDCL backends evaluated are CaDiCaL 1.5.3, Glucose 4, and MiniSat 2.2, each invoked through the PySAT \texttt{Solver} interface with bootstrapped clauses. PySAT's \texttt{solve()} does not accept a wall-clock timeout directly; the 10.0-second limit is enforced externally by the subprocess runner via SIGKILL (\texttt{src/sudoku/bench/runner.py}).
+Clue cells are encoded as positive unit clauses. PySAT CDCL backends evaluated are CaDiCaL 1.5.3, Glucose 4, and MiniSat 2.2, each invoked through the PySAT \texttt{Solver} interface with bootstrapped clauses. PySAT's \texttt{solve()} does not accept a wall-clock timeout directly; the 10.0-second limit is enforced externally by the subprocess runner via SIGKILL (\code{src/sudoku/bench/runner.py}).
 
 \subsection{CP-SAT formulation}
 
-The CP-SAT model uses \(N^2\) integer decision variables \(x[r,c] \in \{1,\dots,N\}\) with all-different constraints per row, column, and box, plus unit equality constraints for clues. OR-Tools CP-SAT combines constraint propagation with CDCL-style conflict analysis. The solver parameter \texttt{max\_time\_in\_seconds} is set to the 10.0-second timeout, and \texttt{num\_workers} is set to 1 (\texttt{src/sudoku/solvers/cpsat.py}).
+The CP-SAT model uses \(N^2\) integer decision variables \(x[r,c] \in \{1,\dots,N\}\) with all-different constraints per row, column, and box, plus unit equality constraints for clues. OR-Tools CP-SAT combines constraint propagation with CDCL-style conflict analysis. The solver parameter \code{max_time_in_seconds} is set to the 10.0-second timeout, and \code{num_workers} is set to 1 (\code{src/sudoku/solvers/cpsat.py}).
 
-\subsection{Classical backtracking}
+\subsection{Classical backtracking}\label{sec:backtracking}
 
-The backtracking solver (\texttt{src/sudoku\_solver/backtracking.py}) maintains a domain of candidate values for each cell, initialized to \(\{1,\dots,N\}\) and narrowed by clues. It implements:
+The backtracking solver (\code{src/sudoku_solver/backtracking.py}) maintains a domain of candidate values for each cell, initialized to \(\{1,\dots,N\}\) and narrowed by clues. It implements:
 \begin{itemize}
     \item \textbf{MRV cell selection}: the unassigned cell with the fewest remaining candidates is chosen; ties break on lowest cell index (row-major); a cell with an empty domain is returned immediately as a contradiction.
     \item \textbf{Forward checking}: after assigning a value, that value is removed from the domains of all peer cells (sharing a row, column, or box); an emptied domain fails the branch.
-    \item \textbf{Optional AC-3}: arc consistency over binary peer inequalities is available via \texttt{use\_ac3}, but is disabled in the benchmark runs (\texttt{use\_ac3=False}); the docstring notes that AC-3 on binary inequalities is weaker than generalized arc consistency on all-different constraints.
+    \item \textbf{Optional AC-3}: arc consistency over binary peer inequalities is available via \texttt{use\_ac3}, but is disabled in the benchmark runs (\texttt{use\_ac3=False}); AC-3 on binary inequalities is weaker than generalized arc consistency on all-different constraints.
     \item \textbf{Depth-first search}: candidates are tried in ascending order; each decision narrows the decision cell's domain to a singleton, propagates, recurses, and restores on failure.
     \item \textbf{Timeout}: the search aborts once a wall-clock deadline is reached and returns timeout status.
 \end{itemize}
 
-Source inspection confirms that \textbf{no least-constraining-value (LCV) heuristic and no degree heuristic are implemented}; candidates are sorted ascending and MRV ties break deterministically on cell index. The benchmark invokes the solver with \texttt{use\_ac3=False} and \texttt{randomize=False} (\texttt{src/sudoku/bench/runner.py:run\_solver\_in\_process}).
+Source inspection confirms that \textbf{no least-constraining-value (LCV) heuristic and no degree heuristic are implemented}; candidates are sorted ascending and MRV ties break deterministically on cell index. The benchmark invokes the solver with \texttt{use\_ac3=False} and \texttt{randomize=False} (\code{src/sudoku/bench/runner.py:run_solver_in_process}).
 
 \subsection{Solver configurations}
 
-Eight configurations were in the primary benchmark matrix: seven SAT configurations and one CP-SAT configuration. Table \ref{tab:configs} lists them. Gurobi and CPLEX adapters exist in the codebase but were not executed due to commercial license restrictions and are excluded from this study. The backtracking solver exists in the codebase and was invoked in a preliminary run (\texttt{full\_v1}), but its results are reported separately from \texttt{data/results/backtracking\_results.csv} (Section 5); see Section 7 for the data-consistency note.
+Eight configurations were in the primary benchmark matrix: seven SAT configurations and one CP-SAT configuration. Table~\ref{tab:configs} lists them. Gurobi and CPLEX adapters exist in the codebase but were not executed due to commercial license restrictions and are excluded from this study. The backtracking solver is evaluated separately; its results are taken from \code{data/results/backtracking_results.csv} (Section~\ref{sec:backtracking}).
 
 \begin{table}[htbp]
 \centering
 \caption{Solver configurations in the primary benchmark.}
 \label{tab:configs}
 \small
+\adjustbox{max width=\linewidth}{%
 \begin{tabular}{lllll}
 \toprule
 Label & Family & Encoding & Backend & Threads \\
@@ -174,20 +175,29 @@ sat\_sequential\_glucose4 & SAT & sequential & glucose4 & 1 \\
 sat\_sequential\_minisat22 & SAT & sequential & minisat22 & 1 \\
 cpsat & CP-SAT & --- & ortools-cpsat & 1 \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 % ============================================================================
 % 4. EXPERIMENTAL DESIGN
 % ============================================================================
 
-\section{Experimental Design}
+\section{Experimental Design}\label{sec:design}
+
+Figure~\ref{fig:workflow} summarizes the experimental workflow.
+
+\begin{figure}[htbp]
+\centering
+\input{figures/fig5_workflow_diagram.tex}
+\caption{Experimental workflow. Twenty puzzles per stratum are paired with solver configurations (seven SAT, one CP-SAT, one backtracking). Each run executes under a 10.0-second wall-clock timeout and a 60\% available-memory resource guard; pairwise and binary SAT encodings at \(N=81\) are predeclared excluded by the guard. Every returned solution is independently verified by \texttt{is\_valid\_solution\_for\_puzzle} before a run is classified as \texttt{SOLVED\_VALID}. Result statuses feed the aggregate, per-configuration, and stratified analyses in Section~\ref{sec:results}. Excluded runs are not attempted and therefore do not enter the run or validation stages.}
+\label{fig:workflow}
+\end{figure}
 
 \subsection{Dataset}
 
-The benchmark uses 120 Sudoku instances spanning six difficulty strata: grid sizes \(N \in \{9, 36, 81\}\) (box sizes \(k \in \{3, 6, 9\}\)) and clue-removal ratios \(r \in \{0.5, 0.9\}\), with 20 instances per stratum. These details are confirmed by \texttt{data/dataset\_info.json} (base seed 42, generator version gen-v1, 20 puzzles per pair, 6 pairs, 120 total puzzles) and \texttt{data/manifest.csv}.
+The benchmark uses 120 Sudoku instances spanning six difficulty strata: grid sizes \(N \in \{9, 36, 81\}\) (box sizes \(k \in \{3, 6, 9\}\)) and clue-removal ratios \(r \in \{0.5, 0.9\}\), with 20 instances per stratum. These details are confirmed by \code{data/dataset_info.json} (base seed 42, generator version gen-v1, 20 puzzles per pair, 6 pairs, 120 total puzzles) and \code{data/manifest.csv}.
 
-Puzzle generation (\texttt{src/sudoku/generator.py}, gen-v1): construct a valid complete grid from the base pattern \((k\cdot(r \bmod k) + r \div k + c) \bmod N + 1\); apply seeded validity-preserving transformations (row permutations within bands, column permutations within stacks, band/stack permutation, optional transpose, digit relabeling); validate the complete grid; remove \(n_\text{remove} = \text{round\_half\_up}(r \times N^2)\) cells; validate the puzzle against the reference solution with \texttt{is\_valid\_puzzle}. Puzzles are not guaranteed to have unique solutions; any valid completion matching clues counts as correct.
+Puzzle generation (\code{src/sudoku/generator.py}, gen-v1): construct a valid complete grid from the base pattern \((k\cdot(r \bmod k) + r \div k + c) \bmod N + 1\); apply seeded validity-preserving transformations (row permutations within bands, column permutations within stacks, band/stack permutation, optional transpose, digit relabeling); validate the complete grid; remove \(n_\text{remove} = \text{round\_half\_up}(r \times N^2)\) cells; validate the puzzle against the reference solution with \texttt{is\_valid\_puzzle}. Puzzles are not guaranteed to have unique solutions; any valid completion matching clues counts as correct.
 
 The realized removal ratios deviate slightly from requested values due to \texttt{round\_half\_up} and cell-count quantization (e.g., \(N=9, r=0.5\) realizes as \(0.50617\) with 40 clues; \(N=81, r=0.9\) realizes as \(0.90002\) with 656 clues). All puzzles are loaded from stored files; no puzzle regeneration occurs during benchmarking.
 
@@ -195,44 +205,44 @@ Generator limitations (from source documentation): puzzles are sampled from the 
 
 \subsection{Solver configurations, timeout, and resource guard}
 
-Each run executes in an isolated subprocess (\texttt{subprocess.Popen} with \texttt{start\_new\_session=True}) under a 10.0-second wall-clock timeout enforced by SIGKILL via the process monitor. A resource guard estimates CNF build memory for SAT encodings: \(\text{estimated\_bytes} = \text{clauses} \times \text{bytes\_per\_clause}\); if this exceeds \(0.60 \times \text{available RAM}\), the run is recorded as \texttt{BUILD\_FAIL} with \texttt{stats.predeclared\_exclusion=true} and is \emph{not} counted as an attempted run. The guard affects \(N=81\) SAT pairwise and binary encodings only (80 predeclared exclusions total: 40 pairwise + 40 binary across both \(N=81\) strata). One live resource-guard rejection occurred during execution (commander at \(N=81, r=0.5\)); this is counted as an attempted run but not as a valid solution.
+Each run executes in an isolated subprocess (\texttt{subprocess.Popen} with \texttt{start\_new\_session=True}) under a 10.0-second wall-clock timeout enforced by SIGKILL via the process monitor. A resource guard estimates CNF build memory for SAT encodings: \(\text{estimated\_bytes} = \text{clauses} \times \text{bytes\_per\_clause}\); if this exceeds \(0.60 \times \text{available RAM}\), the run is recorded as \texttt{BUILD\_FAIL} with \code{stats.predeclared_exclusion=true} and is \emph{not} counted as an attempted run. The guard affects \(N=81\) SAT pairwise and binary encodings only (80 predeclared exclusions total: 40 pairwise + 40 binary across both \(N=81\) strata). One live resource-guard rejection occurred during execution (commander at \(N=81, r=0.5\)); this is counted as an attempted run but not as a valid solution.
 
-Peak RSS is tracked via psutil sampling at 20 ms intervals and \texttt{resource.ru\_maxrss}. Every returned solution is independently verified by \texttt{is\_valid\_solution\_for\_puzzle} (\texttt{src/sudoku/validator.py}), which checks that the candidate is a complete legal grid and matches every clue. A run counts as \texttt{SOLVED\_VALID} only if the solution passes validation.
+Every returned solution is independently verified by \code{is_valid_solution_for_puzzle} (\code{src/sudoku/validator.py}), which checks that the candidate is a complete legal grid and matches every clue. A run counts as \texttt{SOLVED\_VALID} only if the solution passes validation.
 
-\subsection{Timing metrics}
+\subsection{Measurement protocol}
 
-Three timing fields are recorded: \texttt{t\_build} (model construction), \texttt{t\_solve} (pure solver solve time), and \texttt{t\_total} (end-to-end, including build, solve, extraction, and validation). For timed-out runs, \texttt{t\_total} is the wall-clock elapsed time until SIGKILL. Medians and percentiles reported in Section 5 are computed over successful (\texttt{SOLVED\_VALID}) runs only.
+Runtime is measured as wall-clock elapsed time using \texttt{time.perf\_counter()} in the parent benchmark process, encompassing subprocess startup, model building, solving, result extraction, and independent solution validation. Three timing fields are recorded: \texttt{t\_build} (model construction), \texttt{t\_solve} (pure solver solve time), and \texttt{t\_total} (end-to-end). For timed-out runs, \texttt{t\_total} records the wall-clock elapsed time until SIGKILL is delivered to the worker's process group; \texttt{t\_build} and \texttt{t\_solve} are not recorded.
+
+Peak memory usage is measured as peak resident set size (RSS), sampled every 20~ms via \code{psutil.Process.memory_info()} and cross-checked against the child process's \texttt{ru\_maxrss}. The reported \texttt{peak\_rss\_mb} is the maximum of these two measurements, minus the worker's baseline RSS measured immediately before the solver invocation. Memory is reported in mebibytes (MiB, \(1~\mathrm{MiB}=1024^2~\mathrm{bytes}\)).
+
+The memory resource guard is a pre-execution estimate only: it compares the estimated CNF build memory (clause count \(\times\) bytes-per-clause, calibrated from pilot runs) against 60\% of available RAM before the solver process starts, and does not monitor memory during execution. Runs rejected by the guard are recorded as \texttt{BUILD\_FAIL} with \code{peak_rss_mb=None}.
+
+Runtime and memory statistics are computed over \texttt{SOLVED\_VALID} runs only. Censored timeout measurements are excluded from runtime statistics because timeouts have no finite solve time; they contribute to denominators for solve rates but not to median, mean, or P95 statistics. Predeclared exclusions and live resource-guard rejections are likewise excluded.
+
+All puzzles are generated from base seed 42. One run is performed per instance per configuration; there is no replication across seeds or runs. Consequently, no variance estimates, confidence intervals, or hypothesis tests are available, and all statistics in Section~\ref{sec:results} are descriptive single measurements.
 
 \subsection{Environment}
 
-Python 3.14.8 is confirmed by \texttt{data/dataset\_info.json}. PySAT, OR-Tools, and psutil are used. Gurobi and CPLEX adapters exist but were not executed (license restrictions). \textbf{Hardware specifications (CPU, RAM, operating system) are not recorded}; \texttt{full\_v1\_run\_info.json} reports \texttt{environment\_lock\_present=false}, and no environment lock file is present in the repository. Exact solver version pins beyond backend names (cadical153, glucose4, minisat22) are not recorded. These gaps are disclosed in Section 7.
+\textbf{Hardware:} Fedora Linux 44 (Xfce), Intel Core i5-1135G7 CPU @ 2.40~GHz, 8~GiB installed RAM (7.5~GiB available). No CPU frequency scaling, core count, or memory bandwidth were recorded.
 
-\subsection{Single-seed design and lack of replication}
-
-All puzzles are generated from base seed 42. One run is performed per instance per configuration; there is no replication across seeds or runs. Consequently, no variance estimates, confidence intervals, or hypothesis tests are available. All statistics in Section 5 are descriptive, computed from single measurements, and are timeout-censored (timeouts contribute to denominators but have no finite solve time).
-
-\begin{figure}[htbp]
-\centering
-\input{figures/fig5_workflow_diagram.tex}
-\caption{Experimental workflow. Twelve puzzles per stratum are paired with solver configurations (seven SAT, one CP-SAT, one backtracking). Each run executes under a 10.0-second wall-clock timeout and a 60\% available-memory resource guard; pairwise and binary SAT encodings at \(N=81\) are predeclared excluded by the guard. Every returned solution is independently verified by \texttt{is\_valid\_solution\_for\_puzzle} before a run is classified as \texttt{SOLVED\_VALID}. Result statuses feed the aggregate, per-configuration, and stratified analyses in Section 5. Excluded runs are not attempted and therefore do not enter the run or validation stages.}
-\label{fig:workflow}
-\end{figure}
+\textbf{Software:} Python 3.14.8 (confirmed by \code{data/dataset_info.json}). PySAT (backends: cadical153, glucose4, minisat22), OR-Tools CP-SAT, and psutil are used. Gurobi and CPLEX adapters exist in the codebase but were not executed (license restrictions). Exact solver version pins beyond backend names are not recorded, and no environment lock file is present in the repository (see Section~\ref{sec:threats}).
 
 % ============================================================================
 % 5. RESULTS
 % ============================================================================
 
-\section{Results}
+\section{Results}\label{sec:results}
 
-\subsection{Aggregate solver-family comparison}
+\subsection{Aggregate solver-family comparison}\label{sec:aggregate}
 
-Table \ref{tab:t1} reports the aggregate comparison across the three solver families. Denominators strictly exclude predeclared memory-guard exclusions. Valid-solution rate is \(\text{Valid Solutions}/\text{Attempted Runs}\). Timeout rate is timeouts divided by attempted runs.
+Table~\ref{tab:t1} and Figure~\ref{fig:overall} report the aggregate comparison across the three solver families. Denominators strictly exclude predeclared memory-guard exclusions. Valid-solution rate is \(\text{Valid Solutions}/\text{Attempted Runs}\). Timeout rate is timeouts divided by attempted runs.
 
 \begin{table}[htbp]
 \centering
 \caption{Aggregate solver-family comparison. Denominators exclude 80 predeclared SAT memory-guard exclusions. Valid rate and timeout rate are computed over attempted runs. Median solve time is over successful runs only.}
 \label{tab:t1}
 \small
+\adjustbox{max width=\linewidth}{%
 \begin{tabular}{lccc}
 \toprule
 Metric & SAT (7 configs) & CP-SAT (1 config) & Backtracking (1 config) \\
@@ -247,44 +257,46 @@ Timeouts & 328 & 56 & 80 \\
 Timeout rate (\%) of attempted & 43.16 & 46.67 & 66.67 \\
 Live resource-guard rejections & 1 & 0 & 0 \\
 Invalid solutions & 0 & 0 & 0 \\
-Median solve time, valid (s) & 0.009367 & 0.033353 & --- \\
+Median solve time, valid (s) & 0.009367 & 0.033353 & 0.0010 \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
-SAT and CP-SAT achieve comparable valid solve rates (56.71\% vs.\ 53.33\%), but the aggregation structures differ: SAT pools seven configurations across 760 attempted runs, whereas CP-SAT is a single configuration across 120 runs and backtracking is a single configuration across 120 runs. Pooling seven SAT configurations gives SAT more ``at-bats'' per instance; per-configuration results are reported in Section 5.2. Backtracking's 33.33\% valid rate reflects 40 valid solutions, all at \(N=9\), and 80 timeouts, all at \(N=36\) and \(N=81\); its median solve time over successful runs is not verified from the raw records.
+SAT and CP-SAT achieve comparable valid solve rates (56.71\% vs.\ 53.33\%), but the aggregation structures differ: SAT pools seven configurations across 760 attempted runs, whereas CP-SAT is a single configuration across 120 runs and backtracking is a single configuration across 120 runs. Pooling seven SAT configurations gives SAT more ``at-bats'' per instance; per-configuration results are reported in Section~\ref{sec:percfg}. Backtracking's 33.33\% valid rate reflects 40 valid solutions, all at \(N=9\), and 80 timeouts, all at \(N=36\) and \(N=81\).
 
 All 535 valid solutions (431 SAT + 64 CP-SAT + 40 backtracking) passed independent validation; zero invalid solutions were recorded across all families. No solver errors or crashes were recorded in the primary results.
 
 \begin{figure}[htbp]
 \centering
 \input{figures/fig1_overall_comparison.tex}
-\caption{Overall solver-family comparison. Panel (a): valid-solution rate (valid solutions / attempted runs). Panel (b): timeout rate (timeouts / attempted runs). SAT pools seven configurations across 760 attempted runs; CP-SAT and backtracking are single configurations across 120 attempted runs each. SAT's denominator excludes 80 predeclared memory-guard exclusions (pairwise and binary at \(N=81\)). Backtracking's median solve time is not reported (not verified from raw records). All rates are descriptive single measurements with no significance testing.}
+\caption{Overall solver-family comparison. Panel (a): valid-solution rate (valid solutions / attempted runs). Panel (b): timeout rate (timeouts / attempted runs). SAT pools seven configurations across 760 attempted runs; CP-SAT and backtracking are single configurations across 120 attempted runs each. SAT's denominator excludes 80 predeclared memory-guard exclusions (pairwise and binary at \(N=81\)). All rates are descriptive single measurements with no significance testing.}
 \label{fig:overall}
 \end{figure}
 
-\subsection{Per-SAT-configuration breakdown}
+\subsection{Per-SAT-configuration breakdown}\label{sec:percfg}
 
-Table \ref{tab:t2} reports results for each individual SAT configuration. Predeclared exclusions and the live resource-guard rejection are reported separately.
+Table~\ref{tab:t2} and Figure~\ref{fig:satconfigs} report results for each individual SAT configuration. Predeclared exclusions and the live resource-guard rejection are reported separately.
 
 \begin{table}[htbp]
 \centering
 \caption{Per-SAT-configuration breakdown across all 120 instances. Median solve time is over successful runs only.}
 \label{tab:t2}
-\small
-\begin{tabular}{llcccccccc}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\adjustbox{max width=\linewidth}{%
+\begin{tabular}{lcccccccc}
 \toprule
-Solver & Family & Recorded & Predecl. & Attempted & Valid & Rate (\%) & Timeouts & Guard live & Median (s) \\
+Solver & Recorded & Predecl. & Attempted & Valid & Rate (\%) & Timeouts & Guard live & Median (s) \\
 \midrule
-sat\_pairwise\_cadical153 & SAT & 120 & 40 & 80 & 62 & 77.50 & 18 & 0 & 0.009861 \\
-sat\_sequential\_cadical153 & SAT & 120 & 0 & 120 & 62 & 51.67 & 58 & 0 & 0.007760 \\
-sat\_binary\_cadical153 & SAT & 120 & 40 & 80 & 60 & 75.00 & 20 & 0 & 0.011180 \\
-sat\_commander\_cadical153 & SAT & 120 & 0 & 120 & 63 & 52.50 & 56 & 1 & 0.008905 \\
-sat\_product\_cadical153 & SAT & 120 & 0 & 120 & 64 & 53.33 & 56 & 0 & 0.009016 \\
-sat\_sequential\_glucose4 & SAT & 120 & 0 & 120 & 60 & 50.00 & 60 & 0 & 0.007728 \\
-sat\_sequential\_minisat22 & SAT & 120 & 0 & 120 & 60 & 50.00 & 60 & 0 & 0.006915 \\
+sat\_pairwise\_cadical153 & 120 & 40 & 80 & 62 & 77.50 & 18 & 0 & 0.009861 \\
+sat\_sequential\_cadical153 & 120 & 0 & 120 & 62 & 51.67 & 58 & 0 & 0.007760 \\
+sat\_binary\_cadical153 & 120 & 40 & 80 & 60 & 75.00 & 20 & 0 & 0.011180 \\
+sat\_commander\_cadical153 & 120 & 0 & 120 & 63 & 52.50 & 56 & 1 & 0.008905 \\
+sat\_product\_cadical153 & 120 & 0 & 120 & 64 & 53.33 & 56 & 0 & 0.009016 \\
+sat\_sequential\_glucose4 & 120 & 0 & 120 & 60 & 50.00 & 60 & 0 & 0.007728 \\
+sat\_sequential\_minisat22 & 120 & 0 & 120 & 60 & 50.00 & 60 & 0 & 0.006915 \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 The product encoding achieves the most valid solves among SAT configurations (64), matching CP-SAT's total (64). The commander encoding is second (63), with one live resource-guard rejection at \(N=81\). Pairwise and binary show high rates on attempted runs (77.50\%, 75.00\%) only because all 40 of their \(N=81\) instances are predeclared excluded by the memory guard; their rates over all 120 recorded cells would be 51.67\% and 50.00\%, respectively. The differences between product (64), commander (63), and sequential/pairwise (62) are small (one to two solves) and no significance test is performed.
@@ -298,15 +310,24 @@ CP-SAT (64 valid on 120 attempted, 53.33\%) matches product's total but is a sin
 \label{fig:satconfigs}
 \end{figure}
 
-\subsection{Results by grid size and clue-removal ratio}
+\subsection{Results by grid size and clue-removal ratio}\label{sec:strata}
 
-Table \ref{tab:t3} reports results by stratum for SAT (pooled across seven configurations), CP-SAT, and backtracking.
+Figure~\ref{fig:stratified} and Table~\ref{tab:t3} report results by stratum for SAT (pooled across seven configurations), CP-SAT, and backtracking.
+
+\begin{figure}[htbp]
+\centering
+\input{figures/fig2_stratified_performance.tex}
+\caption{Stratified performance by grid size \(N\) and removal ratio \(r\). Valid-solution rate per solver family across the six strata (20 instances per stratum). SAT pools seven configurations; its attempted count per stratum is 140 at \(N=9\) and \(N=36\), and 100 at \(N=81\) after removing 40 predeclared memory-guard exclusions (pairwise and binary). CP-SAT and backtracking attempt 20 runs per stratum. Zero-height bars denote 0\% valid rate; excluded runs are not drawn as bars but are noted in the caption. SAT's valid rate at \(N=81\) is 0\% (0 valid / 100 attempted); CP-SAT and backtracking also reach 0\% at \(N=81\). The \(N=36, r=0.5\) stratum is the hardest for all families (below 21\%).}
+\label{fig:stratified}
+\end{figure}
 
 \begin{table}[htbp]
 \centering
-\caption{Results by grid size \(N\) and removal ratio \(r\). Each stratum has 20 instances. SAT attempted runs reflect 7 configurations minus predeclared exclusions at \(N=81\). Median solve time is over successful runs only; ``---'' denotes no valid solves.}
+\caption{Results by grid size \(N\) and removal ratio \(r\). Each stratum has 20 instances. SAT attempted runs reflect 7 configurations minus predeclared exclusions at \(N=81\). Median solve time is over successful runs only; ``---'' denotes no valid solves, or a median not computed per stratum.}
 \label{tab:t3}
 \small
+\setlength{\tabcolsep}{3pt}
+\adjustbox{max width=\linewidth}{%
 \begin{tabular}{ccclcccccc}
 \toprule
 \(N\) & \(r\) & Solver & Attempted & Valid & Rate (\%) & Timeouts & Guard live & Invalid & Median (s) \\
@@ -330,10 +351,10 @@ Table \ref{tab:t3} reports results by stratum for SAT (pooled across seven confi
 81 & 0.9 & CP-SAT & 20 & 0 & 0.00 & 20 & 0 & 0 & --- \\
 81 & 0.9 & Backtracking & 20 & 0 & 0.00 & 20 & 0 & 0 & --- \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
-\textbf{\(N=9\) (standard Sudoku).} All three families achieve 100\% solve rates on both ratios. CP-SAT is faster than SAT at \(r=0.5\) (median 0.0039s vs.\ 0.0080s); SAT is faster than CP-SAT at \(r=0.9\) (median 0.0083s vs.\ 0.0332s, approximately \(4\times\)). Backtracking solves all 40 \(N=9\) instances; exact backtracking medians were not verified from the raw records and are not reported here. These timing differences are single-median comparisons with no significance test; distributions may overlap.
+\textbf{\(N=9\) (standard Sudoku).} All three families achieve 100\% solve rates on both ratios. CP-SAT is faster than SAT at \(r=0.5\) (median 0.0039s vs.\ 0.0080s); SAT is faster than CP-SAT at \(r=0.9\) (median 0.0083s vs.\ 0.0332s, approximately \(4\times\)). Backtracking solves all 40 \(N=9\) instances with a median solve time of about 1~ms (Table~\ref{tab:runtime}). These timing differences are single-median comparisons with no significance test; distributions may overlap.
 
 \textbf{\(N=36, r=0.5\) (hardness cliff).} Both SAT (9.29\%) and CP-SAT (20.0\%) fall below 21\%; backtracking solves 0 of 20 (all timeouts). Median valid solve times cluster tightly around 7.0s for SAT and CP-SAT, near the 10s timeout, indicating that successful solves are themselves slow. This stratum represents the most difficult condition tested.
 
@@ -341,16 +362,73 @@ Table \ref{tab:t3} reports results by stratum for SAT (pooled across seven confi
 
 \textbf{\(N=81\) (large grid).} Zero valid solutions for all three families across both ratios. SAT pairwise and binary are predeclared excluded (40 per stratum); the remaining five SAT configurations and CP-SAT were attempted and all timed out (99--100 timeouts per SAT stratum plus 1 live guard rejection at \(r=0.5\); 20 timeouts per CP-SAT stratum; 20 timeouts per backtracking stratum). \(N=81\) is intractable within the 10-second timeout for all evaluated approaches; this is a timeout-bound conclusion only, not a claim of unsolvability with larger budgets.
 
-\begin{figure}[htbp]
+\subsection{Runtime and memory usage}\label{sec:runtime}
+
+Table~\ref{tab:runtime} reports wall-clock runtime statistics over solved (\texttt{SOLVED\_VALID}) runs only, grouped by solver configuration and grid size \(N\). Timeout-censored runs and predeclared memory-guard exclusions are excluded. At \(N=81\), no solver family produced a valid solution within the 10.0-second timeout, so no runtime statistics are reported for that size. Backtracking solves zero instances at \(N=36\) and \(N=81\) (all timeouts), so no runtime statistics exist for those strata.
+
+\begin{table}[htbp]
 \centering
-\input{figures/fig2_stratified_performance.tex}
-\caption{Stratified performance by grid size \(N\) and removal ratio \(r\). Valid-solution rate per solver family across the six strata (20 instances per stratum). SAT pools seven configurations; its attempted count per stratum is 140 at \(N=9\) and \(N=36\), and 100 at \(N=81\) after removing 40 predeclared memory-guard exclusions (pairwise and binary). CP-SAT and backtracking attempt 20 runs per stratum. Zero-height bars denote 0\% valid rate; excluded runs are not drawn as bars but are noted in the caption. SAT's high apparent rates at \(N=81\) are undefined (0 valid / 100 attempted); CP-SAT and backtracking also reach 0\% at \(N=81\). The \(N=36, r=0.5\) stratum is the hardest for all families (below 21\%).}
-\label{fig:stratified}
-\end{figure}
+\caption{Wall-clock runtime statistics (seconds) over solved runs only, by solver configuration and grid size \(N\). Timeouts and predeclared exclusions are excluded. ``---'' denotes no valid solves at that size.}
+\label{tab:runtime}
+\small
+\setlength{\tabcolsep}{4pt}
+\adjustbox{max width=\linewidth}{%
+\begin{tabular}{lcccccc}
+\toprule
+Configuration & \multicolumn{3}{c}{\(N=9\) (40 solved)} & \multicolumn{3}{c}{\(N=36\) (solved count varies)} \\
+ & Median & Mean & P95 & Median & Mean & P95 \\
+\midrule
+sat/pairwise/cadical153 & 0.0094 & 0.0093 & 0.0103 & 3.3844 & 3.7409 & 4.6272 \\
+sat/sequential/cadical153 & 0.0074 & 0.0073 & 0.0083 & 1.1384 & 2.6829 & 5.7728 \\
+sat/binary/cadical153 & 0.0107 & 0.0107 & 0.0134 & 2.1846 & 3.2338 & 6.7114 \\
+sat/commander/cadical153 & 0.0085 & 0.0084 & 0.0095 & 0.9294 & 1.5970 & 3.6838 \\
+sat/product/cadical153 & 0.0086 & 0.0085 & 0.0094 & 1.1835 & 2.5690 & 7.8467 \\
+sat/sequential/glucose4 & 0.0072 & 0.0073 & 0.0083 & 2.1766 & 2.5219 & 4.5329 \\
+sat/sequential/minisat22 & 0.0066 & 0.0066 & 0.0075 & 0.9314 & 0.9646 & 1.2381 \\
+CP-SAT & 0.0161 & 0.0185 & 0.0351 & 2.3890 & 2.9944 & 6.9496 \\
+Backtracking & 0.0010 & 0.0010 & 0.0012 & --- & --- & --- \\
+\bottomrule
+\end{tabular}}
+\end{table}
 
-\subsection{Encoding-size versus runtime}
+Table~\ref{tab:memory} reports peak memory usage (peak RSS above baseline) over solved runs only, in mebibytes (MiB). The backtracking results file does not record peak RSS, so no memory statistics are available for backtracking.
 
-Per-run \texttt{stats} fields record primary variable count (\(N^3\)), auxiliary variable count (encoding-dependent), total variable count, clause count, and clue count for every SAT run. These data exist in the raw CSV but have not been aggregated or correlated with runtime in this study. The relationship between encoding size and runtime is therefore stated as unanalyzed; no correlation, regression, or significance claim is made. For reference, at \(N=81\): primary variables \(N^3 = 531{,}441\); exactly-one groups \(4N^2 = 26{,}244\); pairwise AMO per group \(N(N-1)/2 = 3{,}240\) clauses (total pairwise AMO clauses \(\approx 85\) million, motivating predeclared exclusion); sequential counter \(N-1=80\) auxiliary variables per group; binary \(\lceil\log_2 81\rceil=7\) auxiliary variables per group.
+\begin{table}[htbp]
+\centering
+\caption{Peak memory usage (MiB) over solved runs only, by solver configuration and grid size \(N\). Count is the number of solved runs. ``---'' denotes no valid solves or no memory data.}
+\label{tab:memory}
+\small
+\setlength{\tabcolsep}{4pt}
+\adjustbox{max width=\linewidth}{%
+\begin{tabular}{lcccccc}
+\toprule
+Configuration & \multicolumn{3}{c}{\(N=9\)} & \multicolumn{3}{c}{\(N=36\)} \\
+ & Median & Max & Count & Median & Max & Count \\
+\midrule
+sat/pairwise/cadical153 & 102.31 & 103.00 & 40 & 914.97 & 983.71 & 22 \\
+sat/sequential/cadical153 & 101.95 & 102.15 & 40 & 288.43 & 314.17 & 22 \\
+sat/binary/cadical153 & 102.54 & 103.10 & 40 & 414.62 & 418.95 & 20 \\
+sat/commander/cadical153 & 101.68 & 101.87 & 40 & 283.91 & 292.39 & 23 \\
+sat/product/cadical153 & 101.93 & 103.14 & 40 & 257.17 & 266.28 & 24 \\
+sat/sequential/glucose4 & 101.42 & 101.61 & 40 & 249.12 & 251.25 & 20 \\
+sat/sequential/minisat22 & 101.09 & 101.94 & 40 & 227.91 & 228.49 & 20 \\
+CP-SAT & 107.05 & 107.91 & 40 & 174.94 & 176.62 & 24 \\
+Backtracking & --- & --- & --- & --- & --- & --- \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+Several patterns emerge. First, all SAT configurations and CP-SAT consume roughly 101--108 MiB at \(N=9\), reflecting a common Python/PySAT or OR-Tools baseline plus a small CNF. At \(N=36\), memory usage diverges substantially by encoding: pairwise (the largest CNF, approximately 85 million clauses at \(N=81\)) peaks at 915~MiB at \(N=36\), while MiniSat 2.2 with sequential encoding peaks at only 228~MiB. CP-SAT's memory (175--177 MiB at \(N=36\)) is lower than most SAT configurations despite its integer-variable model, consistent with avoiding CNF materialization.
+
+Second, runtime at \(N=9\) is uniformly fast (under 0.02 seconds median) for all families. At \(N=36\), MiniSat 2.2 with sequential encoding is fastest (0.93~s median), while pairwise is slowest (3.38~s median). CP-SAT's median at \(N=36\) (2.39~s) is competitive with several SAT configurations. Backtracking solves all \(N=9\) instances in about 1~ms (median 1.0~ms, P95 1.2~ms) but solves zero instances at \(N=36\) and \(N=81\) (all timeouts).
+
+Third, median runtime at \(N=36\) ranges from 0.93~s to 3.38~s across configurations, while P95 values reach up to 7.85~s (product encoding) and exceed 6~s for several others, approaching the 10-second timeout boundary. Even successful solves at \(N=36\) are therefore slow relative to \(N=9\).
+
+Finally, no configuration solves any \(N=81\) instance within the 10-second timeout. Pairwise and binary SAT encodings at \(N=81\) are predeclared excluded by the memory guard (80 runs total); the remaining five SAT configurations, CP-SAT, and backtracking were all attempted and all timed out.
+
+\subsection{Encoding size versus runtime}\label{sec:encsize}
+
+Per-run \texttt{stats} fields record primary variable count (\(N^3\)), auxiliary variable count (encoding-dependent), total variable count, clause count, and clue count for every SAT run. These data exist in the raw CSV but have not been aggregated or correlated with runtime in this study. The relationship between encoding size and runtime is therefore stated as unanalyzed; no correlation, regression, or significance claim is made. For reference, at \(N=81\): primary variables \(N^3 = 531{,}441\); exactly-one groups \(4N^2 = 26{,}244\); pairwise AMO per group \(N(N-1)/2 = 3{,}240\) clauses (total pairwise AMO clauses \(\approx 85\) million, motivating predeclared exclusion); sequential counter \(N-1=80\) auxiliary variables per group; binary \(\lceil\log_2 81\rceil=7\) auxiliary variables per group. Figure~\ref{fig:complexity} shows clause counts by encoding together with observed outcome counts.
 
 \begin{figure}[htbp]
 \centering
@@ -359,39 +437,17 @@ Per-run \texttt{stats} fields record primary variable count (\(N^3\)), auxiliary
 \label{fig:complexity}
 \end{figure}
 
-\begin{figure}[htbp]
-\centering
-\input{figures/fig6_runtime_distribution_spec.tex}
-\caption{Planned runtime-distribution figure (specification only; not generated). Per-run \texttt{t\_total} values exist in the raw CSVs but were not aggregated under this task's no-code-execution constraint. A box plot or ECDF over \texttt{SOLVED\_VALID} runs would be affected by timeout censoring (successful-run-only survivor bias) and is therefore not presented as evidence.}
-\label{fig:runtimedist}
-\end{figure}
-
-\subsection{Data-consistency notes}
-
-Two issues affect the reporting of backtracking results:
-
-\begin{enumerate}
-    \item \texttt{data/results/backtracking\_results.csv} contains 120 recorded rows: 40 \texttt{SOLVED\_VALID} (all at \(N=9\), both ratios) and 80 \texttt{TIMEOUT} (all at \(N=36\) and \(N=81\), 40 each), with \texttt{validation\_ok=True} for solved rows and no invalid solutions. These are the backtracking results reported in Section 5.
-    \item \texttt{data/results/full\_v1.jsonl} (a preliminary sampled run) contains backtracking runs recorded as \texttt{SOLVER\_ERROR} due to \texttt{TypeError: 'int' object is not iterable} in \texttt{Board.\_\_post\_\_\_init\_\_} (\texttt{src/sudoku\_solver/puzzle.py:64}); the preliminary run was stopped early (\texttt{solver\_error\_rate\_stage}, \texttt{full\_v1\_stop.json}).
-\end{enumerate}
-
-These two sources contradict for backtracking. Section 5 reports backtracking from \texttt{backtracking\_results.csv} (40 valid, 80 timeouts), consistent with the totals stated in the task (120 recorded rows, 40 valid, 80 timeouts). The contradiction with \texttt{full\_v1.jsonl} is documented as an unresolved discrepancy in \texttt{docs/paper\_prep/MANUSCRIPT\_EVIDENCE\_AUDIT.md} and \texttt{MANUSCRIPT\_GAPS.md}; no attempt is made to adjudicate which source is correct by re-running code.
-
-\subsection{What is not claimed}
-
-We do not claim: (i) universal superiority of SAT over CP-SAT or backtracking, or vice versa; (ii) that the product encoding is provably the best SAT encoding (its advantage over commander is one solve, 64 vs.\ 63); (iii) statistical significance for any observed difference; (iv) that \(N=81\) Sudoku is unsolvable by any approach (only unsolvable within 10s); (v) a phase transition (the observed difficulty differences lack theoretical or statistical support); or (vi) that classical backtracking in general cannot solve larger Sudoku instances (the timeouts reflect this specific implementation, configured with MRV + forward checking and no AC-3, on the tested instances).
-
 % ============================================================================
 % 6. DISCUSSION
 % ============================================================================
 
-\section{Discussion}
+\section{Discussion}\label{sec:discussion}
 
 \subsection{Interpretation of aggregate results}
 
 SAT's 56.71\% valid rate (431/760) and CP-SAT's 53.33\% (64/120) are numerically close, but the comparison is not symmetric. SAT's denominator aggregates seven configurations, so each instance contributes up to seven attempted runs; CP-SAT contributes one. Consequently, SAT's absolute solve count (431) is much larger than CP-SAT's (64) even though the per-attempted-run rates are similar. Per-configuration SAT results range from 50.00\% (sequential with Glucose 4 and MiniSat 2.2) to 77.50\% on attempted runs (pairwise, but with 40 \(N=81\) exclusions). The product encoding's 64 valid solves matches CP-SAT's total, but the one-solve margin over commander (63) is too small to support a ranking claim without replication.
 
-Backtracking's 33.33\% valid rate (40/120) is entirely attributable to \(N=9\), where it solves all 40 instances (median solve time not verified from raw records). Its 0\% at \(N=36\) and \(N=81\) (80 timeouts) reflects this specific implementation's scaling limits on the tested instances, not a general property of classical backtracking. The implementation uses MRV + forward checking without AC-3, LCV, or degree heuristics; stronger configurations were not evaluated.
+Backtracking's 33.33\% valid rate (40/120) is entirely attributable to \(N=9\), where it solves all 40 instances in about 1~ms median. Its 0\% at \(N=36\) and \(N=81\) (80 timeouts) reflects this specific implementation's scaling limits on the tested instances, not a general property of classical backtracking. The implementation uses MRV + forward checking without AC-3, LCV, or degree heuristics; stronger configurations were not evaluated.
 
 \subsection{Algorithmic scaling}
 
@@ -405,28 +461,32 @@ SAT's one-hot Boolean encoding with AMO constraints produces large CNFs (hundred
 
 \subsection{Search heuristics}
 
-Backtracking's MRV + forward checking is effective at \(N=9\) (fast solves, exact medians not verified) but insufficient at \(N=36\) and \(N=81\) under the 10s budget. The absence of LCV, degree heuristics, and AC-3 (all confirmed absent from the implementation) may contribute to this scaling limit, but no ablation was performed to isolate their effects. SAT CDCL backends differ (CaDiCaL, Glucose, MiniSat) but their per-configuration results are clustered (50--52\% valid rates for sequential across backends), suggesting backend choice is secondary to encoding and instance difficulty within the tested range.
+Backtracking's MRV + forward checking is effective at \(N=9\) (solves in about 1~ms) but insufficient at \(N=36\) and \(N=81\) under the 10s budget. The absence of LCV, degree heuristics, and AC-3 (all confirmed absent from the implementation) may contribute to this scaling limit, but no ablation was performed to isolate their effects. SAT CDCL backends differ (CaDiCaL, Glucose, MiniSat) but their per-configuration results are clustered (50--52\% valid rates for sequential across backends), suggesting backend choice is secondary to encoding and instance difficulty within the tested range.
 
 \subsection{Limits of cross-family comparison}
 
 Comparisons across solver families are limited by (i) different aggregation structures (7 vs.\ 1 vs.\ 1 configurations), (ii) predeclared exclusions affecting only SAT pairwise/binary at \(N=81\), (iii) timeout censoring (timeouts have no finite solve time), and (iv) survivor bias in median solve times (computed over successful runs only, excluding censored timeouts). These limitations are structural to the benchmark design and are disclosed throughout.
 
+\subsection{What is not claimed}
+
+We do not claim: (i) universal superiority of SAT over CP-SAT or backtracking, or vice versa; (ii) that the product encoding is provably the best SAT encoding (its advantage over commander is one solve, 64 vs.\ 63); (iii) statistical significance for any observed difference; (iv) that \(N=81\) Sudoku is unsolvable by any approach (only unsolvable within 10s); (v) a phase transition (the observed difficulty differences lack theoretical or statistical support); or (vi) that classical backtracking in general cannot solve larger Sudoku instances (the timeouts reflect this specific implementation, configured with MRV + forward checking and no AC-3, on the tested instances).
+
 % ============================================================================
 % 7. THREATS TO VALIDITY
 % ============================================================================
 
-\section{Threats to Validity}
+\section{Threats to Validity}\label{sec:threats}
 
 \begin{enumerate}
     \item \textbf{Single seed and single automorphism orbit.} All puzzles are generated from base seed 42 and sampled from the automorphism orbit of one base pattern. Results may not generalize to other seeds or grid distributions.
     \item \textbf{Small sample size.} Twenty puzzles per stratum (120 total) limits the precision of solve-rate estimates; no confidence intervals are computed.
     \item \textbf{No replication.} One run per instance per configuration; no variance or reproducibility estimates are available.
     \item \textbf{No confidence intervals or hypothesis tests.} All statistics are descriptive single measurements; no inferential claims are made.
-    \item \textbf{Missing environment-lock information.} Hardware (CPU, RAM, OS) is not recorded; \texttt{environment\_lock\_present=false}. Python 3.14.8 is the only confirmed environment detail.
+    \item \textbf{Incomplete environment information.} Exact solver versions beyond backend names are not pinned, and no environment lock file is present (\texttt{environment\_lock\_present=false}). Only the operating system, CPU, RAM, and Python version are recorded (Section~\ref{sec:design}).
     \item \textbf{Predeclared memory exclusions.} Eighty SAT runs (pairwise and binary at \(N=81\)) are predeclared excluded by the 60\% RAM guard; their performance at \(N=81\) is unknown. This creates an aggregation asymmetry favoring pairwise/binary rates on attempted runs.
     \item \textbf{Timeout censoring and survivor bias.} The 10.0s timeout censors runtimes; medians are computed over successful runs only and exclude censored timeouts, which cluster near the timeout at \(N=36, r=0.5\).
-    \item \textbf{Backtracking results are implementation-specific.} Backtracking's 0\% at \(N=36\) and \(N=81\) reflects this implementation (MRV + forward checking, no AC-3/LCV/degree), not classical backtracking generally. A discrepancy exists between \texttt{backtracking\_results.csv} (40 valid, 80 timeouts) and \texttt{full\_v1.jsonl} (backtracking as \texttt{SOLVER\_ERROR}); see Section 5.4 and the audit documents.
-    \item \textbf{Three pre-existing failing tests.} \texttt{test\_full\_v1.py} reports three failing tests (the file documents test expectations around matrix shape, resume behavior, and solution-payload preservation). Their impact on result validity has not been established; they are not assumed irrelevant.
+    \item \textbf{Backtracking results are implementation-specific.} Backtracking's 0\% at \(N=36\) and \(N=81\) reflects this implementation (MRV + forward checking, no AC-3/LCV/degree), not classical backtracking generally.
+    \item \textbf{Three pre-existing failing tests.} \code{test_full_v1.py} reports three failing tests (the file documents test expectations around matrix shape, resume behavior, and solution-payload preservation). Their impact on result validity has not been established; they are not assumed irrelevant.
     \item \textbf{Two removal ratios only.} \(r \in \{0.5, 0.9\}\); no data for intermediate ratios.
     \item \textbf{Non-unique solutions.} Puzzles may admit multiple valid solutions; correctness is any valid completion matching clues.
     \item \textbf{No commercial solvers.} Gurobi and CPLEX are excluded by license restrictions; their performance is unknown.
@@ -445,44 +505,43 @@ The benchmark contributes a documented, reproducible dataset and raw results for
 
 What remains uncertain: the performance of pairwise and binary SAT encodings at \(N=81\) (predeclared excluded); whether encoding size correlates with runtime (unanalyzed); whether results replicate across seeds or runs; and the exact hardware/software environment. Future studies that would most improve confidence: replication across multiple seeds and puzzle distributions; confidence intervals and hypothesis tests; environment locking; evaluation of backtracking with AC-3, LCV, and degree heuristics; larger time budgets at \(N=81\); and inclusion of the unexecuted \(N=81\) pairwise/binary SAT configurations with sufficient memory.
 
-This is a descriptive, hypothesis-generating benchmark, not a confirmatory study. No claim of publication readiness, universal superiority, or statistical significance is made.
+This is a descriptive, hypothesis-generating benchmark, not a confirmatory study.
 
 % ============================================================================
-% DECLARATIONS
+% DATA AVAILABILITY
 % ============================================================================
 
-\section{Declarations}
+\section*{Data availability}
 
-\subsection{Funding}
+Dataset: \code{data/manifest.csv} and \code{data/puzzles/}. Raw results: \code{data/results/benchmark_sat_vs_nonsat.csv} (primary, 960 runs) and \code{data/results/backtracking_results.csv} (backtracking, 120 runs). Dataset metadata: \code{data/dataset_info.json}. Table~\ref{tab:storage} reports the on-disk size of these artifacts; these are storage measurements, distinct from peak memory (RSS) during execution.
 
-[Author confirmation required: funding sources not documented in the repository.]
+\begin{table}[htbp]
+\centering
+\caption{On-disk storage footprint of benchmark artifacts.}
+\label{tab:storage}
+\small
+\begin{tabular}{p{0.48\linewidth}rp{0.28\linewidth}}
+\toprule
+Artifact & Size & Notes \\
+\midrule
+Puzzle dataset (6 JSONL files, 120 puzzles) & 1.66~MiB & \code{data/puzzles/} \\
+Dataset manifest & 21.0~KiB & 120 rows \\
+SAT + CP-SAT results & 351.5~KiB & 960 runs \\
+Backtracking results & 11.3~KiB & 120 runs \\
+Source code (\code{src/}) & 536~KiB & Solvers, generator, validator, runner \\
+\midrule
+Total (puzzles + results + source) & 2.2~MiB & Approximate \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\subsection{Competing interests}
-
-[Author confirmation required: competing interests not documented in the repository.]
-
-\subsection{Author contributions}
-
-[Author confirmation required: author contributions not documented in the repository.]
-
-\subsection{Data availability}
-
-Dataset: \texttt{data/manifest.csv} and \texttt{data/puzzles/}. Raw results: \texttt{data/results/benchmark\_sat\_vs\_nonsat.csv} (primary, 960 runs) and \texttt{data/results/backtracking\_results.csv} (backtracking, 120 runs). Dataset metadata: \texttt{data/dataset\_info.json}.
-
-\subsection{Code availability}
-
-Solver implementations: \texttt{src/sudoku/solvers/} (SAT, CP-SAT), \texttt{src/sudoku\_solver/backtracking.py} (backtracking), \texttt{src/sudoku/validator.py} (independent validator), \texttt{src/sudoku/bench/runner.py} (benchmark runner). Table generation: \texttt{scripts/generate\_paper\_tables.py}.
-
-\subsection{Ethical approval}
-
-Not applicable.
+No solver binaries or shared libraries are measured separately: the benchmark invokes solvers through Python bindings (PySAT, OR-Tools) within a single Python process, so executable and library sizes are subsumed by the Python interpreter and its shared dependencies.
 
 % ============================================================================
 % REFERENCES
 % ============================================================================
 
-\section*{References}
-\bibliographystyle{elsarticle-num}
+\bibliographystyle{cas-model2-names}
 \bibliography{references}
 
 \end{document}

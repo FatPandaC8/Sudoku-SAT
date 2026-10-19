@@ -1,0 +1,53 @@
+This is BibTeX, Version 0.99e (TeX Live 2026)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+The style file: cas-model2-names.bst
+Database file #1: references.bib
+Warning--to sort, need author or key in aaai2007interactive
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Warning--empty author in aaai2007interactive
+Warning--empty pages in aaai2007interactive
+Warning--empty pages in nguyen2020empirical
+Warning--empty pages in simonis2005sudoku
+You've used 13 entries,
+            2990 wiz_defined-function locations,
+            804 strings with 9759 characters,
+and the built_in function-call counts, 6552 in all, are:
+= -- 524
+> -- 160
+< -- 12
++ -- 70
+- -- 51
+* -- 578
+:= -- 952
+add.period$ -- 40
+call.type$ -- 13
+change.case$ -- 94
+chr.to.int$ -- 13
+cite$ -- 20
+duplicate$ -- 572
+empty$ -- 523
+format.name$ -- 77
+if$ -- 1237
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 96
+newline$ -- 81
+num.names$ -- 48
+pop$ -- 238
+preamble$ -- 1
+purify$ -- 69
+quote$ -- 0
+skip$ -- 198
+stack$ -- 0
+substring$ -- 209
+swap$ -- 320
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 117
+warning$ -- 5
+while$ -- 39
+width$ -- 0
+write$ -- 192
+(There were 5 warnings)

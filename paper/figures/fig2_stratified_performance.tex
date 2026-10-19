@@ -10,10 +10,6 @@
 % Excluded/non-attempted runs are shown as annotations; no bar is drawn for
 % missing combinations.
 % ============================================================================
-\documentclass[border=5pt]{standalone}
-\usepackage{pgfplots}
-\pgfplotsset{compat=1.18}
-\begin{document}
 \begin{tikzpicture}
 \begin{axis}[
   ybar, bar width=0.28cm,
@@ -50,10 +46,9 @@
 \end{axis}
 
 % Annotation of attempted / excluded counts (placed below axis as a note)
-\node[align=left, font=\footnotesize, text width=\textwidth] at (current bounding box.south) [yshift=-0.75cm] {
+\node[align=left, font=\scriptsize, text width=0.95\textwidth] at (current bounding box.south) [yshift=-0.75cm] {
   Attempted runs per stratum: SAT [140,140,140,140,100,100] (40 predeclared exclusions removed at each N=81 stratum);
   CP-SAT [20,20,20,20,20,20]; Backtracking [20,20,20,20,20,20].
   Zero-height bars denote 0\% valid rate; no valid-solution median exists at N=81 or for backtracking at N=36/N=81.
 };
 \end{tikzpicture}
-\end{document}

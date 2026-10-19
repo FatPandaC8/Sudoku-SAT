@@ -2,7 +2,7 @@
 % Figure 4: Encoding complexity versus observed outcome (descriptive, no correlation claimed).
 % Data source: clause counts computed exactly from src/sudoku/solvers/sat.py
 % formulas (groups = 4N^2; per-encoding AMO clauses + one ALO per group + clue units).
-% Outcome counts from paper/tables/table3_difficulty_stratification.csv.
+% Outcome counts from data/results/benchmark_sat_vs_nonsat.csv (SAT only, 7 configs).
 % Panel A: total clauses vs N (log y) for each AMO encoding at N in {9,36,81};
 % pairwise and binary at N=81 are marked EXCLUDED (memory guard, ~85M clauses).
 % Panel B: stacked outcome counts per stratum (SAT pooled, 7 configs):
@@ -10,10 +10,6 @@
 % NOTE: runtimes are successful-run-only and timeout-censored; no statistical
 % correlation between clause count and runtime has been analyzed.
 % ============================================================================
-\documentclass[border=5pt]{standalone}
-\usepackage{pgfplots}
-\pgfplotsset{compat=1.18}
-\begin{document}
 \begin{tikzpicture}
   % ---- Panel A: clause count growth vs N (log scale) ----
   \begin{axis}[
@@ -22,15 +18,19 @@
     ymin=1e3, ymax=1e9,
     xmin=5, xmax=86,
     xtick={9,36,81},
-    xlabel={Grid size $N$},
+    xlabel={Grid size \(N\)},
     ylabel={Total CNF clauses (log scale)},
+    ylabel style={yshift=-0.4em},
+    xlabel style={yshift=0.2em},
     ymajorgrids=true,
-    title style={font=\bfseries},
+    title style={font=\bfseries, yshift=0.1em},
     title={(a) Encoding complexity growth (total clauses)},
-    width=0.5\textwidth, height=5.8cm,
-    legend style={at={(0.99,0.01)}, anchor=south east, font=\scriptsize},
+    width=0.45\textwidth, height=5.6cm,
+    legend style={at={(0.02,0.98)}, anchor=north west, font=\tiny, cells={anchor=west}},
+    legend columns=1,
+    enlarge x limits=0.15,
   ]
-  % pairwise: N=9 11988+clues, N=36 ~3.27M, N=81 ~85.06M (excluded)
+  % pairwise: N=9 12028+clues, N=36 ~3.27M, N=81 ~85.06M (excluded)
   \addplot+[mark=square] coordinates {(9,12028) (36,3271144) (81,85056804)};
   \addlegendentry{pairwise}
   % sequential: N=9 7776+clues, N=36 544320, N=81 6298560
@@ -49,20 +49,21 @@
 
   % ---- Panel B: stacked outcome counts per stratum ----
   \begin{axis}[
-    at={(plotA.east)}, anchor=west, xshift=0.6cm,
-    ybar stacked, bar width=0.42cm,
+    at={(plotA.east)}, anchor=west, xshift=1.5cm,
+    ybar stacked, bar width=0.38cm,
     symbolic x coords={
       9r0.5,9r0.9,36r0.5,36r0.9,81r0.5,81r0.9
     },
     xtick=data,
     xticklabel style={font=\tiny, rotate=45, anchor=east},
-    ylabel={Run count (SAT, pooled 7 configs)},
+    ylabel={Run count (SAT, 7 configs)},
+    ylabel style={yshift=-0.4em},
     ymin=0, ymax=150,
     ymajorgrids=true,
     enlargelimits=0.12,
-    legend style={at={(0.5,-0.32)}, anchor=north, legend columns=4, font=\tiny},
-    width=0.5\textwidth, height=5.8cm,
-    title style={font=\bfseries},
+    legend style={at={(0.5,-0.28)}, anchor=north, legend columns=2, font=\tiny},
+    width=0.45\textwidth, height=5.6cm,
+    title style={font=\bfseries, yshift=0.1em},
     title={(b) Observed outcome by stratum},
   ]
   % valid
@@ -88,13 +89,12 @@
   \end{axis}
 
   % ---- Combined annotation below both panels ----
-  \node[align=left, font=\footnotesize, text width=1.05\textwidth] at (current bounding box.south) [yshift=-0.85cm] {
+  \node[align=left, font=\scriptsize, text width=0.95\textwidth] at (current bounding box.south) [yshift=-0.8cm] {
     Clause counts exclude per-stratum clue-unit variation (shown values use representative clue counts; exact per-run values
     are in the \texttt{stats.clauses} field of \texttt{data/results/benchmark\_sat\_vs\_nonsat.csv}).
-    Pairwise and binary at N=81 exceed the 60\% available-RAM guard and were predeclared excluded (no point plotted).
-    Panel B run counts sum to recorded cells per stratum (140 at N=9/N=36; 100 attempted + 40 excluded at N=81).
+    Pairwise and binary at \(N=81\) exceed the 60\% available-RAM guard and were predeclared excluded (no point plotted).
+    Panel B run counts sum to recorded cells per stratum (140 at \(N=9\)/\(N=36\); 100 attempted + 40 excluded at \(N=81\)).
     Runtime medians are over successful runs only and are timeout-censored; no correlation between clause count and runtime
     has been statistically analyzed.
   };
 \end{tikzpicture}
-\end{document}
