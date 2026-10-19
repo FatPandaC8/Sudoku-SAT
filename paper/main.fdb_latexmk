@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1792388137.95019 "main.aux" "main.bbl" "main" 1792388139.43967 0
+["bibtex main"] 1792388451.57324 "main.aux" "main.bbl" "main" 1792388573.16927 0
   "./cas-model2-names.bst" 1792364236.51858 31802 28b630660245c09f173aac55be552b29 ""
   "./references.bib" 1792356364.38879 4864 c2c7f4f45023cfb449252a6544f5140a ""
-  "main.aux" 1792388139.21148 17304 09b9eec0a17be6f4660bed7267cc1d96 "pdflatex"
+  "main.aux" 1792388572.95097 17282 fb496b0d0dfd5fcffb22c1dc3d06de2d "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1792388137.9755 "main.tex" "main.pdf" "main" 1792388139.43996 0
+["pdflatex"] 1792388571.63524 "main.tex" "main.pdf" "main" 1792388573.16942 0
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1136849721 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -285,18 +285,18 @@
   "/usr/share/texlive/texmf-dist/web2c/texmf.cnf" 1777593600 43785 66587115382950aca692b5f6e3c2fb74 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1792362184 474823 1920315fcdaeb96fe6cd3d7650c46ac5 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1792362152 3334149 f088ba029c9d2196ae58e060fd53a906 ""
-  "cas-common.sty" 1792362511.02924 76688 c602be3da196cb506acc84d1fa26b134 ""
+  "cas-common.sty" 1792388207.64056 76590 1bb69b5d5f7675801937d524ba428ec9 ""
   "cas-sc.cls" 1792362320.97695 4410 65b518b1d7581e9c4ebe84b81471ee59 ""
   "figures/fig1_overall_comparison.tex" 1792385205.7688 1744 580e7a70fa682396e39101fcae940726 ""
   "figures/fig2_stratified_performance.tex" 1792381240.08222 2375 bbe3344778a5209cf8687efe54b410d3 ""
   "figures/fig3_sat_configurations.tex" 1792385466.7953 3089 9deb23829e46ca30fbd944a7a7cd1b40 ""
   "figures/fig4_encoding_complexity.tex" 1792385454.07687 4624 699d53f599421f50d2fbad084c9f3919 ""
   "figures/fig5_workflow_diagram.tex" 1792385984.35158 3235 58bbea6c47b63bf8323137024ecd35d3 ""
-  "main.abs" 1792388138.50568 1783 2e53eb6078506666145736557dffe7a1 "pdflatex"
-  "main.aux" 1792388139.21148 17304 09b9eec0a17be6f4660bed7267cc1d96 "pdflatex"
-  "main.bbl" 1792388137.97343 6237 c749b8a2d3cc159f8a2428683157cb21 "bibtex main"
-  "main.out" 1792388139.21248 5733 2583ed292badbc6eaf5fbc18dce109c0 "pdflatex"
-  "main.tex" 1792387581.42049 53481 f3b494b8f26f0fa1375bde80597de8c0 ""
+  "main.abs" 1792388572.21091 1783 2e53eb6078506666145736557dffe7a1 "pdflatex"
+  "main.aux" 1792388572.95097 17282 fb496b0d0dfd5fcffb22c1dc3d06de2d "pdflatex"
+  "main.bbl" 1792388451.59968 6237 c749b8a2d3cc159f8a2428683157cb21 "bibtex main"
+  "main.out" 1792388572.95197 5733 2583ed292badbc6eaf5fbc18dce109c0 "pdflatex"
+  "main.tex" 1792388570.61589 53618 2f4cec0846ce4e34edc5aa50964d2599 ""
   (generated)
   "main.abs"
   "main.aux"
